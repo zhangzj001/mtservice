@@ -1,0 +1,1 @@
+java -cp ./bin;./bin/*;./libs/* cn.jugame.im.IMService

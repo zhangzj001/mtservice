@@ -3,11 +3,11 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>cn.jugame.im</groupId>
-	<artifactId>im_service</artifactId>
+	<groupId>cn.jugame.mt</groupId>
+	<artifactId>mtservice</artifactId>
 	<version>1.0.0</version>
 	<packaging>jar</packaging>
-	<name>im_service</name>
+	<name>mtservice</name>
 	<url>http://maven.apache.org</url>
 
 	<properties>
@@ -293,5 +293,13 @@
 			<version>3.18.2-GA</version>
 		</dependency>
 	</dependencies>
+	
+	<distributionManagement>
+		<repository>
+			<id>releases</id>
+			<name>releases</name>
+			<url>http://192.168.0.7:8088/nexus/content/repositories/releases/</url>
+		</repository>
+	</distributionManagement>
 
 </project>

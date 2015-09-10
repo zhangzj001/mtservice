@@ -93,4 +93,9 @@ public class HttpResponse implements MtPackage{
 		return parseResponse();
 	}
 
+	@Override
+	public boolean isReady() {
+		return true;
+	}
+
 }

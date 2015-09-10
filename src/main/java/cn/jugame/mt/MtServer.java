@@ -11,7 +11,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,14 +49,19 @@ public class MtServer {
 					it.remove();
 					
 					SocketChannel channel = (SocketChannel)readyKey.channel();
-					logger.info("channel ready for read, channel.hashCode=>" + channel.hashCode());
+					logger.debug("channel ready for read, channel.hashCode=>" + channel.hashCode());
 					
 					//XXX 必须要先读出数据来，否则如果先进了队列，而队列又来不及读取，while就会进入死循环
 					MtPackage req = read_channel(channel);
 					//如果遇到了IO错误，一般是客户端自己关掉了socket
 					if(req == null){
-						logger.info("some io error while reading from client, possibly client closes channel");
+						logger.debug("some io error while reading from client, possibly client closes channel");
 						close_channel(channel);
+						continue;
+					}
+
+					//如果数据还没完全准备好，那就等准备好了再说
+					if(!req.isReady()){
 						continue;
 					}
 					
@@ -75,7 +79,7 @@ public class MtServer {
 				try{
 					do_run();
 				}catch(Exception e){
-					logger.info("meet exception while reading user data: " + e.getMessage());
+					logger.debug("meet exception while reading user data: " + e.getMessage());
 				}
 			}
 		}
@@ -166,7 +170,7 @@ public class MtServer {
 		// 注册accept
 		serv_channel.register(selector, SelectionKey.OP_ACCEPT);
 		
-		logger.info("监听ing...");
+		logger.debug("监听ing...");
 		while(selector.select() > 0) {
 			Iterator<SelectionKey> it = selector.selectedKeys().iterator();
 			while (it.hasNext()) {
@@ -175,10 +179,17 @@ public class MtServer {
 				if(readyKey.isValid() && readyKey.isAcceptable()){
 					//接收客户端请求
 					ServerSocketChannel channel = (ServerSocketChannel)readyKey.channel();
-					logger.info("new connection coming, channel.hashCode=>" + channel.hashCode());
+					logger.debug("new connection coming, channel.hashCode=>" + channel.hashCode());
 					do_accept(channel);
 				}
 			}
+		}
+		
+		//这里原本不应该来到的，但是万一来到了呢？
+		logger.debug("WTF！！！ServerSocketChannel got some problems...");
+		if(serv_channel.isOpen()){
+			logger.debug("WTF！！ServerSocketChannel is still alive, i have to kill it and restart it.");
+			serv_channel.close();
 		}
 	}
 
@@ -199,7 +210,7 @@ public class MtServer {
 		}
 		
 		//注册到selector中等待内容读取
-		logger.info("register channel to recv_selector for looping");
+		logger.debug("register channel to recv_selector for looping");
 		//挑一个selector出来把channel塞进去轮询
 		Looper looper = get_looper();
 		synchronized (looper) {

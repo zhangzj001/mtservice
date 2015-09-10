@@ -74,4 +74,9 @@ public class HttpRequest implements MtPackage{
 		this.queryString = queryString;
 	}
 
+	@Override
+	public boolean isReady() {
+		return true;
+	}
+
 }

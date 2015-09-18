@@ -1,5 +1,6 @@
 package cn.jugame.mt;
 
+import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -24,7 +25,7 @@ import org.slf4j.LoggerFactory;
  */
 public class MtServer {
 	
-	private static Logger logger = LoggerFactory.getLogger(MtServer.class);
+	private static Logger logger = LoggerFactory.getLogger("watcher");
 
 	/**
 	 * 用来做轮询的一个内部类
@@ -38,10 +39,23 @@ public class MtServer {
 			this.recv_selector = recv_selector;
 		}
 		
-		private void do_run() throws Exception{
-			int n = recv_selector.select();
+		private void do_run(){
+			long t1 = System.currentTimeMillis();
+			int n = 0;
+			try{
+				n = recv_selector.select();
+			}catch(Exception e){
+				logger.error("error", e);
+			}
+			long t2 = System.currentTimeMillis();
+			logger.warn("recv_selector=" + recv_selector.hashCode() + ", t=" + (t2-t1));
+			
 			//加上这行是为了recv_selector.wakeup和channel.register两行代码进行同步处理。
+			t1 = System.currentTimeMillis();
 			synchronized (this) {}
+			t2 = System.currentTimeMillis();
+			logger.warn("block for register channel, recv_selector=" + recv_selector.hashCode() + ", t=" + (t2-t1));
+			
 			if(n > 0){
 				Iterator<SelectionKey> it = recv_selector.selectedKeys().iterator();
 				while (it.hasNext()) {
@@ -51,8 +65,11 @@ public class MtServer {
 					SocketChannel channel = (SocketChannel)readyKey.channel();
 					logger.debug("channel ready for read, channel.hashCode=>" + channel.hashCode());
 					
+					t1 = System.currentTimeMillis();
 					//XXX 必须要先读出数据来，否则如果先进了队列，而队列又来不及读取，while就会进入死循环
 					MtPackage req = read_channel(channel);
+					t2 = System.currentTimeMillis();
+					logger.warn("channel=" + channel.hashCode() + ", read_channel, t=" + (t2-t1));
 					//如果遇到了IO错误，一般是客户端自己关掉了socket
 					if(req == null){
 						logger.debug("some io error while reading from client, possibly client closes channel");
@@ -65,10 +82,13 @@ public class MtServer {
 						continue;
 					}
 					
+					t1 = System.currentTimeMillis();
 					//把channel和数据一块打包带进队列中处理
 					if(!do_jobs(channel, req)){
 						close_channel(channel);
 					}
+					t2 = System.currentTimeMillis();
+					logger.warn("channel=" + channel.hashCode() + ", do_jobs, t=" + (t2-t1));
 				}
 			}
 		}
@@ -76,11 +96,7 @@ public class MtServer {
 		@Override
 		public void run() {
 			while(true){
-				try{
-					do_run();
-				}catch(Exception e){
-					logger.debug("meet exception while reading user data: " + e.getMessage());
-				}
+				do_run();
 			}
 		}
 	}
@@ -139,11 +155,16 @@ public class MtServer {
 	 * 单独一个线程专门用来运转recv_selector
 	 * @throws Exception
 	 */
-	public void loop() throws Exception{
-		//初始化recv_selectors
-		for(int i=0; i<thread_count; ++i){
-			Selector selector = Selector.open();
-			loopers.add(new Looper(selector));
+	public boolean loop(){
+		try{
+			//初始化recv_selectors
+			for(int i=0; i<thread_count; ++i){
+				Selector selector = Selector.open();
+				loopers.add(new Looper(selector));
+			}
+		}catch(IOException e){
+			logger.error("error", e);
+			return false;
 		}
 		
 		//开始轮询recv_selector
@@ -156,40 +177,51 @@ public class MtServer {
 				}
 			}
 		}.start();
+		
+		return true;
 	}
 
-	public void accpet() throws Exception {
-		final Selector selector = Selector.open();
-		ServerSocketChannel serv_channel = ServerSocketChannel.open();
-
-		// 非阻塞
-		serv_channel.configureBlocking(false);
-		serv_channel.socket().setReuseAddress(true);
-		serv_channel.socket().bind(new InetSocketAddress(this.port));
-
-		// 注册accept
-		serv_channel.register(selector, SelectionKey.OP_ACCEPT);
-		
-		logger.debug("监听ing...");
-		while(selector.select() > 0) {
-			Iterator<SelectionKey> it = selector.selectedKeys().iterator();
-			while (it.hasNext()) {
-				SelectionKey readyKey = it.next();
-				it.remove();
-				if(readyKey.isValid() && readyKey.isAcceptable()){
-					//接收客户端请求
-					ServerSocketChannel channel = (ServerSocketChannel)readyKey.channel();
-					logger.debug("new connection coming, channel.hashCode=>" + channel.hashCode());
-					do_accept(channel);
+	public void accpet() {
+		ServerSocketChannel serv_channel = null;
+		try{
+			final Selector selector = Selector.open();
+			serv_channel = ServerSocketChannel.open();
+	
+			// 非阻塞
+			serv_channel.configureBlocking(false);
+			serv_channel.socket().setReuseAddress(true);
+			serv_channel.socket().bind(new InetSocketAddress(this.port));
+	
+			// 注册accept
+			serv_channel.register(selector, SelectionKey.OP_ACCEPT);
+			
+			logger.debug("监听ing...");
+			while(selector.select() > 0) {
+				Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+				while (it.hasNext()) {
+					SelectionKey readyKey = it.next();
+					it.remove();
+					if(readyKey.isValid() && readyKey.isAcceptable()){
+						//接收客户端请求
+						ServerSocketChannel channel = (ServerSocketChannel)readyKey.channel();
+						logger.debug("new connection coming, channel.hashCode=>" + channel.hashCode());
+						do_accept(channel);
+					}
 				}
 			}
-		}
-		
-		//这里原本不应该来到的，但是万一来到了呢？
-		logger.debug("WTF！！！ServerSocketChannel got some problems...");
-		if(serv_channel.isOpen()){
-			logger.debug("WTF！！ServerSocketChannel is still alive, i have to kill it and restart it.");
-			serv_channel.close();
+		}catch(Exception e){
+			logger.error("error", e);
+		}finally{
+			//这里是不应该来到的地方，来到了那必然发生了灾难！！
+			try{
+				logger.debug("WTF！！！ServerSocketChannel got some problems...");
+				if(serv_channel != null && serv_channel.isOpen()){
+					logger.debug("WTF！！ServerSocketChannel is still alive, i have to kill it and restart it.");
+					serv_channel.close();
+				}
+			}catch(Exception e){
+				logger.error("error", e);
+			}
 		}
 	}
 
@@ -214,8 +246,11 @@ public class MtServer {
 		//挑一个selector出来把channel塞进去轮询
 		Looper looper = get_looper();
 		synchronized (looper) {
+			long t1 = System.currentTimeMillis();
 			looper.recv_selector.wakeup();
 			channel.register(looper.recv_selector, SelectionKey.OP_READ);
+			long t2 = System.currentTimeMillis();
+			logger.warn("accept new socket, recv_selector=" + looper.recv_selector.hashCode() + ", t=" + (t2 - t1));
 		}
 	}
 	

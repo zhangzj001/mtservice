@@ -11,7 +11,6 @@ import cn.jugame.http.HttpRequest;
 import cn.jugame.http.HttpResponse;
 import cn.jugame.http.HttpService;
 import cn.jugame.util.Common;
-import cn.jugame.util.helper.net.HttpFetcher;
 
 public class HttpServer extends HttpJob{
 	

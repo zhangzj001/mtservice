@@ -40,21 +40,15 @@ public class MtServer {
 		}
 		
 		private void do_run(){
-			long t1 = System.currentTimeMillis();
 			int n = 0;
 			try{
 				n = recv_selector.select();
 			}catch(Exception e){
 				logger.error("error", e);
 			}
-			long t2 = System.currentTimeMillis();
-			logger.warn("recv_selector=" + recv_selector.hashCode() + ", t=" + (t2-t1));
 			
 			//加上这行是为了recv_selector.wakeup和channel.register两行代码进行同步处理。
-			t1 = System.currentTimeMillis();
 			synchronized (this) {}
-			t2 = System.currentTimeMillis();
-			logger.warn("block for register channel, recv_selector=" + recv_selector.hashCode() + ", t=" + (t2-t1));
 			
 			if(n > 0){
 				Iterator<SelectionKey> it = recv_selector.selectedKeys().iterator();
@@ -65,11 +59,8 @@ public class MtServer {
 					SocketChannel channel = (SocketChannel)readyKey.channel();
 					logger.debug("channel ready for read, channel.hashCode=>" + channel.hashCode());
 					
-					t1 = System.currentTimeMillis();
 					//XXX 必须要先读出数据来，否则如果先进了队列，而队列又来不及读取，while就会进入死循环
 					MtPackage req = read_channel(channel);
-					t2 = System.currentTimeMillis();
-					logger.warn("channel=" + channel.hashCode() + ", read_channel, t=" + (t2-t1));
 					//如果遇到了IO错误，一般是客户端自己关掉了socket
 					if(req == null){
 						logger.debug("some io error while reading from client, possibly client closes channel");
@@ -82,13 +73,10 @@ public class MtServer {
 						continue;
 					}
 					
-					t1 = System.currentTimeMillis();
 					//把channel和数据一块打包带进队列中处理
 					if(!do_jobs(channel, req)){
 						close_channel(channel);
 					}
-					t2 = System.currentTimeMillis();
-					logger.warn("channel=" + channel.hashCode() + ", do_jobs, t=" + (t2-t1));
 				}
 			}
 		}
@@ -246,11 +234,9 @@ public class MtServer {
 		//挑一个selector出来把channel塞进去轮询
 		Looper looper = get_looper();
 		synchronized (looper) {
-			long t1 = System.currentTimeMillis();
+			logger.info("regist channel【" + channel.hashCode() + "】 into looper【" + looper.hashCode() + "】");
 			looper.recv_selector.wakeup();
 			channel.register(looper.recv_selector, SelectionKey.OP_READ);
-			long t2 = System.currentTimeMillis();
-			logger.warn("accept new socket, recv_selector=" + looper.recv_selector.hashCode() + ", t=" + (t2 - t1));
 		}
 	}
 	

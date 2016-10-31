@@ -113,23 +113,40 @@ public class Common {
 		out.close();
 	}
 	
-	public static byte[] file_get_contents(String file) throws Exception{
+	public static byte[] file_get_contents(String file){
 		File f = new File(file);
+		if(!f.exists())
+			return null;
+		
 		int len = (int)f.length();
 		byte[] bs = new byte[len];
 		
-		FileInputStream in = new FileInputStream(f);
-		int n = 0, off = 0;
-		while((n = in.read(bs, off, len)) != -1 && len != 0){
-			off += n;
-			len -= n;
+		FileInputStream in = null;
+		try{
+			in = new FileInputStream(f);
+			int n = 0, off = 0;
+			while((n = in.read(bs, off, len)) != -1 && len != 0){
+				off += n;
+				len -= n;
+			}
+			return bs;
+		}catch(Exception e){
+			logger.error("error", e);
+			return null;
+		}finally{
+			if(in != null)
+				try{in.close();}catch(Exception e){logger.error("error", e);}
 		}
-		in.close();
-		return bs;
 	}
-	public static String file_get_contents(String file, String encode) throws Exception{
+	public static String file_get_contents(String file, String encode){
 		byte[] bs = file_get_contents(file);
-		return new String(bs, encode);
+		if(bs == null)
+			return null;
+		try{
+			return new String(bs, encode);
+		}catch(Exception e){
+			return null;
+		}
 	}
 	
 	public static String[] array_filter(String[] arr){

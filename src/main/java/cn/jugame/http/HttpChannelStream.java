@@ -31,7 +31,7 @@ public class HttpChannelStream implements MtChannelStream{
 		HttpRequest request = new HttpRequest();
 		HttpParser parser = new HttpParser();
 		
-		ByteBuffer buffer = ByteBuffer.allocate(4096);
+		ByteBuffer buffer = ByteBuffer.wrap(new byte[4096*1024]);
 		Selector selector = null;
 		
 		try{
@@ -122,7 +122,7 @@ public class HttpChannelStream implements MtChannelStream{
 			baos.write(pack.getData());
 			byte[] bs = baos.toByteArray();
 			
-			ByteBuffer buf = ByteBuffer.allocate(bs.length);
+			ByteBuffer buf = ByteBuffer.wrap(new byte[bs.length]);
 			buf.put(bs);
 			buf.flip();
 			

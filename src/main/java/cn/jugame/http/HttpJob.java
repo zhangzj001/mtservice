@@ -1,5 +1,6 @@
 package cn.jugame.http;
 
+import java.net.HttpCookie;
 import java.nio.channels.SocketChannel;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -43,6 +44,14 @@ public abstract class HttpJob implements MtJob{
 			response.setHeader("Connection", "keep-alive");
 		}else{
 			response.setHeader("Connection", "close");
+		}
+		
+		//如果存在session，则在Set-Cookie头部中带上SESSIONID
+		HttpSession session = request.session(false);
+		if(session != null){
+			HttpCookie cookie = new HttpCookie("SESSIONID", session.getId());
+			cookie.setPath("/");
+			response.setHeader("Set-Cookie", "SESSIONID=" + session.getId());
 		}
 		
 		//将数据写回客户端

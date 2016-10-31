@@ -3,6 +3,10 @@ package cn.jugame.http;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.CookieManager;
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
@@ -14,11 +18,8 @@ public class HttpResponse implements MtPackage{
 	private String protocol = "HTTP/1.1";
 	private int statusCode = 200;
 	private String statusMsg = "OK";
-	private TreeMap<String, String> headers = new TreeMap<String, String>();
+	private TreeMap<String, List<String>> headers = new TreeMap<String, List<String>>();
 	private byte[] content = new byte[0];
-	
-	//这个是整个响应报文
-	private ByteArrayOutputStream stream = new ByteArrayOutputStream();
 	
 	public HttpResponse(){
 		//设置一些基本的头部
@@ -59,7 +60,17 @@ public class HttpResponse implements MtPackage{
 	}
 	
 	public void setHeader(String name, String value){
-		headers.put(name, value);
+		List<String> vs = headers.get(name);
+		if(vs == null){
+			vs = new LinkedList<>();
+			headers.put(name, vs);
+		}
+		
+		//目前为止，我只知道Set-Cookie是支持多个同名头的 ，所以除了Set-Cookie头之外，其余头部都采取覆盖的方式
+		if(!"Set-Cookie".equalsIgnoreCase(name))
+			vs.clear();
+		
+		vs.add(value);
 	}
 	
 	private byte[] parseResponse(){
@@ -67,8 +78,10 @@ public class HttpResponse implements MtPackage{
 		//响应头第一行
 		buf.append(this.protocol).append(" ").append(statusCode).append(" ").append(statusMsg).append("\r\n");
 		//响应头的头部
-		for(Entry<String, String> e : headers.entrySet()){
-			buf.append(e.getKey()).append(": ").append(e.getValue()).append("\r\n");
+		for(Entry<String, List<String>> e : headers.entrySet()){
+			for(String v : e.getValue()){
+				buf.append(e.getKey()).append(": ").append(v).append("\r\n");
+			}
 		}
 		//数据体分隔行
 		buf.append("\r\n");
@@ -84,7 +97,7 @@ public class HttpResponse implements MtPackage{
 		}
 	}
 	
-	public Map<String, String> getHeaders(){
+	public Map<String, List<String>> getHeaders(){
 		return headers;
 	}
 

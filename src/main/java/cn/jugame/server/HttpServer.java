@@ -1,7 +1,10 @@
 package cn.jugame.server;
 
+import java.net.HttpCookie;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.Map.Entry;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -10,6 +13,7 @@ import cn.jugame.http.HttpJob;
 import cn.jugame.http.HttpRequest;
 import cn.jugame.http.HttpResponse;
 import cn.jugame.http.HttpService;
+import cn.jugame.http.HttpSession;
 import cn.jugame.util.Common;
 
 public class HttpServer extends HttpJob{
@@ -36,12 +40,31 @@ public class HttpServer extends HttpJob{
 	protected boolean handleRequest(HttpRequest request, HttpResponse response) {
 		Map<String, String> params = parseParams(request.getQueryString());
 		String uri = request.getUri();
+		System.out.println("uri => " + uri);
+		System.out.println("data.length => " + request.getData().length);
 		
-		//记录用户请求日志
-		if(uri.indexOf(LOG_USER_APPS) != -1){
-			request.getData();
+		Map<String, String> headers = request.getHeaders();
+		for(Entry<String, String> e : headers.entrySet()){
+			System.out.println("header => " + e.getKey() + " : " + e.getValue());
 		}
 		
+		try{
+		System.out.println("data => " + new String(request.getData(), "UTF-8"));
+		}catch(Exception e){}
+		
+		List<HttpCookie> cookies = request.getCookies();
+		for(HttpCookie cookie : cookies){
+			System.out.println("Cookie: " + cookie);
+		}
+		
+		HttpSession session = request.session();
+		System.out.println("SessionId => " + session.getId());
+		
+//		byte[] bs = Common.file_get_contents("D:/book/[MySQL核心技术手册(第二版)].pdf");
+//		response.setHeader("Content-Type", "application/octet-stream");
+//		response.setHeader("Content-Length", String.valueOf(bs.length));
+//		response.setHeader("Content-Disposition", "attachment; filename=myfile.pdf");
+//		response.setContent(bs);
 		response.setContent("hello world");
 		return true;
 	}

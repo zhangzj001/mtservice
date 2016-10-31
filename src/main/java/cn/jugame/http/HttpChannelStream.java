@@ -1,6 +1,7 @@
 package cn.jugame.http;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
@@ -69,6 +70,9 @@ public class HttpChannelStream implements MtChannelStream{
 				return null;
 
 			return request;
+		}catch(IOException e){
+			//远程主机强迫关闭了一个现有的连接
+			return null;
 		}catch(Exception e){
 			e.printStackTrace();
 			return null;

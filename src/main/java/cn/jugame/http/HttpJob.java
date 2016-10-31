@@ -1,9 +1,6 @@
 package cn.jugame.http;
 
-import java.net.HttpCookie;
 import java.nio.channels.SocketChannel;
-import java.util.Map;
-import java.util.Map.Entry;
 
 import cn.jugame.mt.MtJob;
 import cn.jugame.mt.MtPackage;
@@ -51,7 +48,8 @@ public abstract class HttpJob implements MtJob{
 		if(session != null){
 			HttpCookie cookie = new HttpCookie("SESSIONID", session.getId());
 			cookie.setPath("/");
-			response.setHeader("Set-Cookie", "SESSIONID=" + session.getId());
+			cookie.setHttpOnly(true);
+			response.setCookie(cookie);
 		}
 		
 		//将数据写回客户端

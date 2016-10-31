@@ -3,8 +3,6 @@ package cn.jugame.http;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.net.CookieManager;
-import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -71,6 +69,10 @@ public class HttpResponse implements MtPackage{
 			vs.clear();
 		
 		vs.add(value);
+	}
+	
+	public void setCookie(HttpCookie cookie){
+		setHeader("Set-Cookie", cookie.toString());
 	}
 	
 	private byte[] parseResponse(){

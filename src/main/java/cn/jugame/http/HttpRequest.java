@@ -1,9 +1,7 @@
 package cn.jugame.http;
 
-import java.net.CookieManager;
-import java.net.CookieStore;
-import java.net.HttpCookie;
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -24,7 +22,7 @@ public class HttpRequest implements MtPackage{
 	private String sessionId;
 	
 	//存储cookie的容器
-	private CookieManager cm = new CookieManager();
+	private Map<String, HttpCookie> cookieMap = new LinkedHashMap<String, HttpCookie>();
 
 	public String getMethod() {
 		return method;
@@ -67,16 +65,15 @@ public class HttpRequest implements MtPackage{
 		//如果是Cookie头部，设置cookie，顺便把sessionId给找出来
 		if(!"Cookie".equals(name))
         	return;
-		CookieStore cookieStore = cm.getCookieStore();
     	String[] vs = Common.array_filter(value.split(";"));
     	for(String v : vs){
-			List<HttpCookie> list = HttpCookie.parse(v);
-			for(HttpCookie cookie : list){
-				try{cookieStore.add(new URI(getUri()), cookie);}catch(Exception e){e.printStackTrace();}
-				//如果是SESSIONID，就将值保存下来
+    		List<HttpCookie> cookies = HttpCookie.parse(v);
+    		for(HttpCookie cookie : cookies){
+	    		cookieMap.put(cookie.getName(), cookie);
+	    		//顺便把sessionId保存下来
 				if(SessionStorage.SESSIONID.equals(cookie.getName()))
 					this.sessionId = cookie.getValue();
-			}
+    		}
     	}
 	}
 	
@@ -108,19 +105,15 @@ public class HttpRequest implements MtPackage{
 	}
 
 	public List<HttpCookie> getCookies(){
-		return cm.getCookieStore().getCookies();
+		List<HttpCookie> list = new ArrayList<>();
+		list.addAll(cookieMap.values());
+		return list;
 	}
 	
 	public HttpCookie getCookie(String name){
 		if(StringUtils.isBlank(name))
 			return null;
-		
-		List<HttpCookie> cookies = cm.getCookieStore().getCookies();
-		for(HttpCookie cookie : cookies){
-			if(name.equals(cookie.getName()))
-				return cookie;
-		}
-		return null;
+		return cookieMap.get(name);
 	}
 	
 	private HttpSession getSession(boolean create){

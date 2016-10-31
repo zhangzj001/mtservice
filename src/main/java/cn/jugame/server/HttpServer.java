@@ -1,6 +1,5 @@
 package cn.jugame.server;
 
-import java.net.HttpCookie;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -9,6 +8,7 @@ import java.util.Map.Entry;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import cn.jugame.http.HttpCookie;
 import cn.jugame.http.HttpJob;
 import cn.jugame.http.HttpRequest;
 import cn.jugame.http.HttpResponse;
@@ -54,17 +54,24 @@ public class HttpServer extends HttpJob{
 		
 		List<HttpCookie> cookies = request.getCookies();
 		for(HttpCookie cookie : cookies){
-			System.out.println("Cookie: " + cookie);
+			System.out.println("Cookie: " + cookie.getName() + "=" + cookie.getValue());
 		}
 		
-		HttpSession session = request.session();
-		System.out.println("SessionId => " + session.getId());
+//		HttpSession session = request.session();
+//		System.out.println("SessionId => " + session.getId());
 		
 //		byte[] bs = Common.file_get_contents("D:/book/[MySQL核心技术手册(第二版)].pdf");
 //		response.setHeader("Content-Type", "application/octet-stream");
 //		response.setHeader("Content-Length", String.valueOf(bs.length));
 //		response.setHeader("Content-Disposition", "attachment; filename=myfile.pdf");
 //		response.setContent(bs);
+		
+		HttpCookie cookie = new HttpCookie("a", "b");
+		cookie.setPath(request.getUri());
+		cookie.setMaxAge(10);
+		response.setCookie(cookie);
+		response.setCookie(new HttpCookie("c", "d"));
+		
 		response.setContent("hello world");
 		return true;
 	}

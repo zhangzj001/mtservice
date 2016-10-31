@@ -2,7 +2,7 @@ package cn.jugame.http;
 
 import cn.jugame.util.Cache;
 
-public class SessionStorage {
+class SessionStorage {
 	
 	private SessionStorage(){}
 	

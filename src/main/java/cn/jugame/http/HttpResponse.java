@@ -3,15 +3,19 @@ package cn.jugame.http;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.net.HttpCookie;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpServletResponseWrapper;
+
 import cn.jugame.mt.MtPackage;
 
-public class HttpResponse implements MtPackage{
+public class HttpResponse  implements MtPackage{
 	
 	private String protocol = "HTTP/1.1";
 	private int statusCode = 200;
@@ -72,7 +76,7 @@ public class HttpResponse implements MtPackage{
 	}
 	
 	public void setCookie(HttpCookie cookie){
-		setHeader("Set-Cookie", cookie.toString());
+		setHeader("Set-Cookie", CookieUtils.cookie2string(cookie));
 	}
 	
 	private byte[] parseResponse(){

@@ -1,19 +1,22 @@
 package cn.jugame.server;
 
+import java.net.HttpCookie;
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.TreeMap;
 
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import cn.jugame.http.HttpCookie;
 import cn.jugame.http.HttpJob;
 import cn.jugame.http.HttpRequest;
 import cn.jugame.http.HttpResponse;
 import cn.jugame.http.HttpService;
-import cn.jugame.http.HttpSession;
+import cn.jugame.http.MultipartRequest;
+import cn.jugame.http.multipart.FilePart;
+import cn.jugame.http.multipart.ParamPart;
+import cn.jugame.http.multipart.Part;
 import cn.jugame.util.Common;
 
 public class HttpServer extends HttpJob{
@@ -48,10 +51,6 @@ public class HttpServer extends HttpJob{
 			System.out.println("header => " + e.getKey() + " : " + e.getValue());
 		}
 		
-		try{
-		System.out.println("data => " + new String(request.getData(), "UTF-8"));
-		}catch(Exception e){}
-		
 		List<HttpCookie> cookies = request.getCookies();
 		for(HttpCookie cookie : cookies){
 			System.out.println("Cookie: " + cookie.getName() + "=" + cookie.getValue());
@@ -71,6 +70,32 @@ public class HttpServer extends HttpJob{
 		cookie.setMaxAge(10);
 		response.setCookie(cookie);
 		response.setCookie(new HttpCookie("c", "d"));
+		
+		//解析参数
+		if(request.isMultipart()){
+			System.out.println("multipart结构的参数");
+			MultipartRequest mr = new MultipartRequest(request);
+			for(String name : mr.paramNames()){
+				Part p = mr.getPart(name);
+				if(p.isParam()){
+					ParamPart part = (ParamPart)p;
+					try{
+					System.out.println("ParamPart: " + part.getName() + "=>" + part.getStringValue());
+					}catch(Exception e){e.printStackTrace();}
+				}
+				else if(p.isFile()){
+					FilePart part = (FilePart)p;
+					byte[] bs = part.getFileContent();
+					Common.file_put_contents("D:/" + part.getFileName(), bs, false);
+					System.out.println("FilePart: " + part.getName() + ", filename=>" + part.getFileName() + ", content-type=>" + part.getContentType() + ", filepath=>" + part.getFilePath() + ", file.length=>" + bs.length);
+				}
+			}
+		}else{
+			System.out.println("非multipart结构的参数");
+			try{
+			System.out.println("data => " + new String(request.getData(), "UTF-8"));
+			}catch(Exception e){}
+		}
 		
 		response.setContent("hello world");
 		return true;

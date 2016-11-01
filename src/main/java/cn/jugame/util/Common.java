@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.nio.ByteBuffer;
@@ -100,17 +101,27 @@ public class Common {
 		return (int)d;
 	}
 	
-	public static void file_put_contents(String file, String content, boolean append) throws Exception{
-		FileOutputStream out = new FileOutputStream(file, append);
-		out.write(content.getBytes());
-		out.flush();
-		out.close();
+	public static void file_put_contents(String file, String content, boolean append){
+		try{
+			file_put_contents(file, content.getBytes("UTF-8"), append);
+		}catch(Exception e){
+			logger.error("error", e);
+		}
 	}
-	public static void file_put_contents(String file, byte[] bs, boolean append) throws Exception{
-		FileOutputStream out = new FileOutputStream(file, append);
-		out.write(bs);
-		out.flush();
-		out.close();
+	public static boolean file_put_contents(String file, byte[] bs, boolean append){
+		FileOutputStream out = null;
+		try{
+			out = new FileOutputStream(file, append);
+			out.write(bs);
+			out.flush();
+			return true;
+		}catch(Exception e){
+			logger.error("error", e);
+			return false;
+		}finally{
+			if(out != null)
+				try{out.close();}catch(Exception e){logger.error("error", e);}
+		}
 	}
 	
 	public static byte[] file_get_contents(String file){
@@ -361,4 +372,24 @@ public class Common {
         	return null;
         }
 	}
+	
+    public static byte[] readStream(InputStream is) {
+        ByteArrayOutputStream bos = null;
+        try {
+            bos = new ByteArrayOutputStream();
+            byte[] buff = new byte[1024];
+            int count = -1;
+            while ((count = is.read(buff, 0, 1024)) > 0) {
+                bos.write(buff, 0, count);
+            }
+            bos.flush();
+            return bos.toByteArray();
+        } catch (Exception ignored) {
+            //do nothing
+        } finally {
+            try {if(bos != null) bos.close();} catch(Exception ignored){}
+        }
+        
+        return null;
+    }
 }

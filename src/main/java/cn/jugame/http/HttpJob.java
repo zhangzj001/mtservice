@@ -1,5 +1,6 @@
 package cn.jugame.http;
 
+import java.net.HttpCookie;
 import java.nio.channels.SocketChannel;
 
 import cn.jugame.mt.MtJob;

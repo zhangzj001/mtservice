@@ -1,12 +1,17 @@
 package cn.jugame.http;
 
+import java.io.ByteArrayInputStream;
+import java.net.HttpCookie;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.servlet.ServletInputStream;
+
 import org.apache.commons.lang.StringUtils;
+import org.springframework.mock.web.DelegatingServletInputStream;
 
 import cn.jugame.mt.MtPackage;
 import cn.jugame.util.Common;
@@ -103,7 +108,7 @@ public class HttpRequest implements MtPackage{
 	public boolean isReady() {
 		return true;
 	}
-
+	
 	public List<HttpCookie> getCookies(){
 		List<HttpCookie> list = new ArrayList<>();
 		list.addAll(cookieMap.values());
@@ -114,6 +119,22 @@ public class HttpRequest implements MtPackage{
 		if(StringUtils.isBlank(name))
 			return null;
 		return cookieMap.get(name);
+	}
+	
+	public String getContentType(){
+		//header中寻找content-type字段
+		String contentType = getHeader("Content-Type");
+		if(StringUtils.isBlank(contentType))
+			contentType = "text/plain";
+		return contentType;
+	}
+	
+	public int getContentLength(){
+		return content.length;
+	}
+	
+	public ServletInputStream getInputStream(){
+		return new DelegatingServletInputStream(new ByteArrayInputStream(content));
 	}
 	
 	private HttpSession getSession(boolean create){
@@ -141,4 +162,14 @@ public class HttpRequest implements MtPackage{
 	public HttpSession session(){
 		return session(true);
 	}
+	
+	/**
+	 * 是否为multipart类型的请求
+	 * @return
+	 */
+	public boolean isMultipart(){
+		String type = this.getHeader("Content-Type");
+		return (type!=null && type.toLowerCase().startsWith("multipart/form-data"));
+	}
+	
 }

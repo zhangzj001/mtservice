@@ -75,7 +75,7 @@ public class ParamPart extends Part {
 	 * 
 	 * @return value of parameter as a string.
 	 */
-	public String getStringValue() throws UnsupportedEncodingException {
+	public String getStringValue() {
 		return getStringValue(encoding);
 	}
 
@@ -85,8 +85,13 @@ public class ParamPart extends Part {
 	 * 
 	 * @return value of parameter as a string.
 	 */
-	public String getStringValue(String encoding) throws UnsupportedEncodingException {
-		return new String(value, encoding);
+	public String getStringValue(String encoding) {
+		try{
+			return new String(value, encoding);
+		}catch(UnsupportedEncodingException e){
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	/**

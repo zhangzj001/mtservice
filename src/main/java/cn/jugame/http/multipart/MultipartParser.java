@@ -226,7 +226,7 @@ public class MultipartParser {
 	}
 
 	/**
-	 * 读取FilePart的时候，会释放上一个FilePart的inputstream！注意这一点！
+	 * 读取FilePart的时候，会释放上一个FilePart的inputstream！注意这一点！<br>
 	 * Read the next part arriving in the stream. Will be either a
 	 * <code>FilePart</code> or a <code>ParamPart</code>, or <code>null</code>
 	 * to indicate there are no more parts to read. The order of arrival

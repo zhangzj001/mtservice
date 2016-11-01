@@ -376,10 +376,11 @@ public class Common {
     public static byte[] readStream(InputStream is) {
         ByteArrayOutputStream bos = null;
         try {
+        	int BUF_LEN = 4*1024*1024; //4M的读
             bos = new ByteArrayOutputStream();
-            byte[] buff = new byte[1024];
+            byte[] buff = new byte[BUF_LEN];
             int count = -1;
-            while ((count = is.read(buff, 0, 1024)) > 0) {
+            while ((count = is.read(buff, 0, BUF_LEN)) > 0) {
                 bos.write(buff, 0, count);
             }
             bos.flush();

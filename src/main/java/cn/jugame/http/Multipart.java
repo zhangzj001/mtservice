@@ -10,10 +10,10 @@ import cn.jugame.http.multipart.MultipartParser;
 import cn.jugame.http.multipart.ParamPart;
 import cn.jugame.http.multipart.Part;
 
-public class MultipartRequest {
+public class Multipart {
 	
 	private Map<String, Part> params = new TreeMap<>();
-	public MultipartRequest(HttpRequest request){
+	public Multipart(HttpRequest request){
 		try{
 			MultipartParser parser = new MultipartParser(request);
 			Part p = null;

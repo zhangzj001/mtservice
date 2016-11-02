@@ -46,7 +46,7 @@ import javax.servlet.ServletInputStream;
  * <a href="http://www.ietf.org/rfc/rfc1867.txt"> http://www.ietf.org/rfc/
  * rfc1867.txt</a>.
  * 
- * @see com.oreilly.servlet.MultipartRequest
+ * @see com.Multipart.servlet.MultipartRequest
  * 
  * @author Jason Hunter
  * @author Geoff Soutter

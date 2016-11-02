@@ -13,7 +13,7 @@ import cn.jugame.http.HttpJob;
 import cn.jugame.http.HttpRequest;
 import cn.jugame.http.HttpResponse;
 import cn.jugame.http.HttpService;
-import cn.jugame.http.MultipartRequest;
+import cn.jugame.http.Multipart;
 import cn.jugame.http.multipart.FilePart;
 import cn.jugame.http.multipart.ParamPart;
 import cn.jugame.http.multipart.Part;
@@ -76,7 +76,7 @@ public class HttpServer extends HttpJob{
 		//解析参数
 		if(request.isMultipart()){
 			System.out.println("multipart结构的参数");
-			MultipartRequest mr = new MultipartRequest(request);
+			Multipart mr = new Multipart(request);
 			for(String name : mr.paramNames()){
 				Part p = mr.getPart(name);
 				if(p.isParam()){

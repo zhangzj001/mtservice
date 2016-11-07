@@ -131,4 +131,9 @@ public abstract class Service implements MtJob{
 	 * @return
 	 */
 	protected abstract boolean do_job(SocketChannel channel, JSONObject data);
+	
+	@Override
+	public void before_close_channel(SocketChannel channel) {
+		//默认什么也不做
+	}
 }

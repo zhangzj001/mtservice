@@ -7,7 +7,7 @@ public interface MtJob {
 	 * 接收到用户数据，并进行处理
 	 * @param channel
 	 * @param bs
-	 * @return
+	 * @return 返回true表示维持用户连接，false表示方法执行完便主动断开用户连接
 	 */
 	public boolean do_job(SocketChannel channel, MtPackage bs);
 	

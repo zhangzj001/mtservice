@@ -6,7 +6,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import cn.jugame.mt.MtServer;
-import cn.jugame.util.Config;
+import cn.jugame.util.JuConfig;
 
 public class HttpService {
 	protected MtServer serv;
@@ -19,11 +19,11 @@ public class HttpService {
 	}
 	
 	public boolean init(){
-		int so_timeout = Config.getValueInt("so_timeout");
+		int so_timeout = JuConfig.getValueInt("so_timeout");
 		try{
-			serv = new MtServer(Config.getValueInt("server_port"), 
-					Config.getValueInt("server_thread_count"), 
-					Config.getValueInt("max_connections"),
+			serv = new MtServer(JuConfig.getValueInt("server_port"), 
+					JuConfig.getValueInt("server_thread_count"), 
+					JuConfig.getValueInt("max_connections"),
 					new HttpChannelStream(so_timeout));
 			//job关联一下mtserv
 			job.setMtServer(serv);

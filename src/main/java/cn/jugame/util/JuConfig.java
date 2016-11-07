@@ -9,7 +9,7 @@ import java.util.Properties;
  * @author cai9911
  *
  */
-public class Config {
+public class JuConfig {
 	public static final String CONFIG_FILE_NAME = "resources.properties";
 	public static Properties props = new Properties();
 

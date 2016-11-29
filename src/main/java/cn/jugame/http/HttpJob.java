@@ -3,23 +3,22 @@ package cn.jugame.http;
 import java.net.HttpCookie;
 import java.nio.channels.SocketChannel;
 
+import cn.jugame.mt.Job;
 import cn.jugame.mt.MtJob;
 import cn.jugame.mt.MtPackage;
 import cn.jugame.mt.MtServer;
+import cn.jugame.mt.NioSocket;
 import cn.jugame.util.Common;
+import sun.util.logging.resources.logging;
 
-public abstract class HttpJob implements MtJob{
-	protected MtServer serv;
-	public void setMtServer(MtServer serv) {
-		this.serv = serv;
-	}
+public abstract class HttpJob implements Job{
 	
 	protected abstract boolean handleRequest(HttpRequest req, HttpResponse resp);
 	
 	@Override
-	public boolean do_job(SocketChannel channel, MtPackage bs) {
+	public boolean doJob(NioSocket socket, Object packet) {
 		//处理用户请求
-		HttpRequest request = (HttpRequest)bs;
+		HttpRequest request = (HttpRequest)packet;
 		HttpResponse response = new HttpResponse();
 		
 		if(!handleRequest(request, response))
@@ -54,7 +53,9 @@ public abstract class HttpJob implements MtJob{
 		}
 		
 		//将数据写回客户端
-		serv.write_channel(channel, response);
+		if(!socket.send(response.getData())){
+			return false;
+		}
 		
 		//总是返回true，意味着必须让客户端去关闭这个连接，这可以有效避免服务器陷入TimeWait泛滥的境地
 		//不过有可能恶意的客户端一直hold着不放，还好我有LRUChannelManager
@@ -62,6 +63,7 @@ public abstract class HttpJob implements MtJob{
 	}
 
 	@Override
-	public void before_close_channel(SocketChannel channel) {
+	public void beforeCloseSocket(NioSocket socket) {
+		//do nothing
 	}
 }

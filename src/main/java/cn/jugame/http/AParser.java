@@ -44,11 +44,11 @@ public abstract class AParser {
 	private int curr_index = 0;
 	//用来存储数据流的一个容器，源源不断地往这个容器里塞数据，同时再触发解析动作
 	private int capacity = 1024;
-	private ByteBuffer buf = ByteBuffer.wrap(new byte[capacity]);
+	private ByteBuffer inBuf = ByteBuffer.wrap(new byte[capacity]);
 	
 	protected byte read_byte(int pos){
 		try{
-			return buf.get(pos);
+			return inBuf.get(pos);
 		}catch(IndexOutOfBoundsException e){
 			return -1;
 		}
@@ -74,15 +74,15 @@ public abstract class AParser {
 	
 	protected void append_bytes(byte[] bs){
 		//如果容量不够了
-		if(buf.remaining() < bs.length){
-			buf.flip();
-			capacity = buf.capacity() + bs.length * 2;
+		if(inBuf.remaining() < bs.length){
+			inBuf.flip();
+			capacity = inBuf.capacity() + bs.length * 2;
 			ByteBuffer new_buf = ByteBuffer.wrap(new byte[capacity]);
-			new_buf.put(buf);
-			buf = new_buf;
+			new_buf.put(inBuf);
+			inBuf = new_buf;
 		}
 		
-		buf.put(bs);
+		inBuf.put(bs);
 	}
 
 	protected String read_line(){
@@ -97,14 +97,22 @@ public abstract class AParser {
 	}
 	
 	protected byte[] read(int content_length){
-		int remaining = buf.position() - curr_index;
+		int remaining = inBuf.position() - curr_index;
 		if(remaining >= content_length){
 			//将position定在curr_index的位置，往后的都是数据
-			buf.position(curr_index);
+			inBuf.position(curr_index);
 			byte[] bs = new byte[content_length];
-			buf.get(bs);
+			inBuf.get(bs);
 			return bs;
 		}
 		return null;
+	}
+	
+	protected int remaining(){
+		return inBuf.limit() - curr_index;
+	}
+	
+	protected void resetBuf(){
+		inBuf.clear();
 	}
 }

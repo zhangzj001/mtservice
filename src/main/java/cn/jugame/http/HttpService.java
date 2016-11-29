@@ -2,17 +2,17 @@ package cn.jugame.http;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import cn.jugame.mt.MtServer;
+import cn.jugame.mt.NioService;
+import cn.jugame.mt.ProtocalParser;
+import cn.jugame.mt.ProtocalParserFactory;
 import cn.jugame.util.JuConfig;
 
 public class HttpService {
-	protected MtServer serv;
 	
 	private static Logger logger = LoggerFactory.getLogger(HttpService.class);
 	
+	private NioService service;
 	private HttpJob job;
 	public HttpService(HttpJob job){
 		this.job = job;
@@ -20,23 +20,18 @@ public class HttpService {
 	
 	public boolean init(){
 		int so_timeout = JuConfig.getValueInt("so_timeout");
-		try{
-			serv = new MtServer(JuConfig.getValueInt("server_port"), 
-					JuConfig.getValueInt("server_thread_count"), 
-					JuConfig.getValueInt("max_connections"),
-					new HttpChannelStream(so_timeout));
-			//job关联一下mtserv
-			job.setMtServer(serv);
-			serv.register(job);
-			
-			//设置读超时
-			serv.setSoTimeout(so_timeout);
-			
-			return true;
-		}catch(Exception e){
-			e.printStackTrace();
-			return false;
-		}
+		service = new NioService(JuConfig.getValueInt("server_port"), 
+				JuConfig.getValueInt("server_thread_count"), 
+				JuConfig.getValueInt("max_connections"));
+		service.setJob(this.job);
+		service.setSoTimeout(so_timeout);
+		service.setProtocalParserFactory(new ProtocalParserFactory() {
+			@Override
+			public ProtocalParser create() {
+				return new HttpParser();
+			}
+		});
+		return service.init();
 	}
 	
 	public void run(){
@@ -45,8 +40,7 @@ public class HttpService {
 			logger.info("服务启动成功，开始监听用户请求");
 			System.out.println("启动服务成功，开始监听用户请求.");
 			System.out.println("---------------------------");
-			serv.loop();
-			serv.accpet();
+			service.accpet();
 		}catch(Exception e){
 			e.printStackTrace();
 		}

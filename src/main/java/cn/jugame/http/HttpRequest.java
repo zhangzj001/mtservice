@@ -16,7 +16,7 @@ import org.springframework.mock.web.DelegatingServletInputStream;
 import cn.jugame.mt.MtPackage;
 import cn.jugame.util.Common;
 
-public class HttpRequest implements MtPackage{
+public class HttpRequest {
 	
 	private String method = "";
 	private String uri = "";
@@ -91,7 +91,6 @@ public class HttpRequest implements MtPackage{
 		return headers;
 	}
 
-	@Override
 	public byte[] getData() {
 		return content;
 	}
@@ -102,11 +101,6 @@ public class HttpRequest implements MtPackage{
 
 	public void setQueryString(String queryString) {
 		this.queryString = queryString;
-	}
-
-	@Override
-	public boolean isReady() {
-		return true;
 	}
 	
 	public List<HttpCookie> getCookies(){

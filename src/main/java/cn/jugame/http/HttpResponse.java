@@ -10,12 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpServletResponseWrapper;
-
-import cn.jugame.mt.MtPackage;
-
-public class HttpResponse  implements MtPackage{
+public class HttpResponse {
 	
 	private String protocol = "HTTP/1.1";
 	private int statusCode = 200;
@@ -107,14 +102,8 @@ public class HttpResponse  implements MtPackage{
 		return headers;
 	}
 
-	@Override
 	public byte[] getData() {
 		return parseResponse();
-	}
-
-	@Override
-	public boolean isReady() {
-		return true;
 	}
 
 }

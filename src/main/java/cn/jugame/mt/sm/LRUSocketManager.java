@@ -1,7 +1,9 @@
-package cn.jugame.mt;
+package cn.jugame.mt.sm;
 
 import java.util.Iterator;
 import java.util.LinkedHashSet;
+
+import cn.jugame.mt.NioSocket;
 
 /**
  * 基于LRU策略的socket管理器，可以通过该管理器限制服务端最大的保持连接数，当有更多连接进来的时候，将会将最旧的连接踢出<br>
@@ -9,7 +11,7 @@ import java.util.LinkedHashSet;
  * @author zimT_T
  *
  */
-class LRUSocketManager {
+public class LRUSocketManager implements SocketManager{
 	private int capacity;
 	public LRUSocketManager(int capacity){
 		this.capacity = capacity;
@@ -17,6 +19,7 @@ class LRUSocketManager {
 	
 	private LinkedHashSet<NioSocket> channels = new LinkedHashSet<NioSocket>();
 	
+	@Override
 	public NioSocket add(NioSocket socket){
 		synchronized (this) {
 			NioSocket old_channel = null;
@@ -44,13 +47,15 @@ class LRUSocketManager {
 			}
 		}
 	}
-	
+
+	@Override
 	public void remove(NioSocket socket){
 		synchronized (this) {
 			channels.remove(socket);
 		}
 	}
-	
+
+	@Override
 	public int size(){
 		return channels.size();
 	}

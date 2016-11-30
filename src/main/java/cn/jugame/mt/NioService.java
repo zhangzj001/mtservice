@@ -14,11 +14,14 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.jugame.mt.sm.LRUSocketManager;
+import cn.jugame.mt.sm.SocketManager;
+
 public class NioService {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	//进行LRU模式的socket管理，用于限制当前最大连接数量
-	private LRUSocketManager mng = null;
+	private SocketManager mng = null;
 	private int port;
 	private int reactorCount;
 	private List<Reactor> reactors = new ArrayList<Reactor>();
@@ -35,8 +38,8 @@ public class NioService {
 	/**
 	 * 启用LRU的socket管理
 	 */
-	public void useLruManager(int capacity){
-		this.mng = new LRUSocketManager(capacity);
+	public void useLruManager(SocketManager mng){
+		this.mng = mng;
 	}
 	
 	/**
@@ -59,7 +62,7 @@ public class NioService {
 	 * 获取LRU模式的socket管理器
 	 * @return
 	 */
-	public LRUSocketManager getSocketManager() {
+	public SocketManager getSocketManager() {
 		return mng;
 	}
 

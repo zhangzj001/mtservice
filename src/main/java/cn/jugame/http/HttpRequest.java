@@ -63,7 +63,7 @@ public class HttpRequest {
 	}
 
 	public void setHeader(String name, String value){
-		name = AParser.fixHeaderName(name);
+		name = HttpParser.fixHeaderName(name);
 		headers.put(name, value);
 		
 		//如果是Cookie头部，设置cookie，顺便把sessionId给找出来
@@ -82,7 +82,7 @@ public class HttpRequest {
 	}
 	
 	public String getHeader(String name){
-		name = AParser.fixHeaderName(name);
+		name = HttpParser.fixHeaderName(name);
 		return headers.get(name);
 	}
 	

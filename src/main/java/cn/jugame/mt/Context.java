@@ -1,5 +1,8 @@
 package cn.jugame.mt;
 
+import cn.jugame.mt.sm.LRUSocketManager;
+import cn.jugame.mt.sm.SocketManager;
+
 public class Context {
 	private NioService service;
 	public Context(NioService service){
@@ -16,7 +19,7 @@ public class Context {
 		service.getJob().beforeCloseSocket(socket);
 		
 		//关闭channel前先从LRU管理器中移除
-		LRUSocketManager mng = service.getSocketManager();
+		SocketManager mng = service.getSocketManager();
 		if(mng != null)
 			mng.remove(socket);
 		

@@ -3,6 +3,7 @@ package cn.jugame.http;
 import java.nio.ByteBuffer;
 import java.util.TreeMap;
 
+import cn.jugame.mt.Buffer;
 import cn.jugame.mt.ProtocalParser;
 
 /**
@@ -10,7 +11,45 @@ import cn.jugame.mt.ProtocalParser;
  * @author zimT_T
  *
  */
-public class HttpParser extends AParser implements ProtocalParser{
+public class HttpParser implements ProtocalParser{
+	
+	private Buffer buffer = new Buffer();
+
+	//http请求头的名称标准化
+	public static final TreeMap<String, String> HEADER_FORMAT = new TreeMap<String, String>();
+	static{
+		HEADER_FORMAT.put("accept", "Accept");
+		HEADER_FORMAT.put("acceptcharset", "Accept-Charset");
+		HEADER_FORMAT.put("acceptlanguage", "Accept-Language");
+		HEADER_FORMAT.put("acceptencoding", "Accept-Encoding");
+		HEADER_FORMAT.put("authorization", "Authorization");
+		HEADER_FORMAT.put("cachecontrol", "Cache-Control");
+		HEADER_FORMAT.put("connection", "Connection");
+		HEADER_FORMAT.put("contenttype", "Content-Type");
+		HEADER_FORMAT.put("cookie", "Cookie");
+		HEADER_FORMAT.put("expect", "Expect");
+		HEADER_FORMAT.put("from", "From");
+		HEADER_FORMAT.put("host", "Host");
+		HEADER_FORMAT.put("ifmatch", "If-Match");
+		HEADER_FORMAT.put("ifmodifiedsince", "If-Modified-Since");
+		HEADER_FORMAT.put("ifnonematch", "If-None-Match");
+		HEADER_FORMAT.put("ifunmodifiedsince", "If-Unmodified-Since");
+		HEADER_FORMAT.put("pragma", "Pragma");
+		HEADER_FORMAT.put("proxyauthorization", "Proxy-Authorization");
+		HEADER_FORMAT.put("range", "Range");
+		HEADER_FORMAT.put("referer", "Referer");
+		HEADER_FORMAT.put("upgrage", "Upgrage");
+		HEADER_FORMAT.put("useragent", "User-Agent");
+		HEADER_FORMAT.put("via", "Via");
+		HEADER_FORMAT.put("warning", "Warning");
+	}
+
+	public static String fixHeaderName(String name){
+		String s = name.toLowerCase().replace("-", "");
+		if(HEADER_FORMAT.containsKey(s))
+			return HEADER_FORMAT.get(s);
+		return name;
+	}
 	
 	//解析第一行状态行
 	private final static int PARSE_STATUS_LINE = 0;
@@ -44,16 +83,16 @@ public class HttpParser extends AParser implements ProtocalParser{
 		if(content_length == 0)
 			return new byte[0];
 		
-		return read(content_length);
+		return buffer.read(content_length);
 	}
 	
 	public boolean cycle_parse(byte[] bs){
 		//先把字节流append进去
-		append_bytes(bs);
+		buffer.appendBytes(bs);
 		
 		while(current_state != PARSE_FINISH){
 			if(current_state == PARSE_STATUS_LINE){
-				String s = read_line();
+				String s = buffer.readLine();
 				//这一波没数据了
 				if(s == null)
 					break;
@@ -71,7 +110,7 @@ public class HttpParser extends AParser implements ProtocalParser{
 				current_state = PARSE_HEADER;
 			}
 			else if(current_state == PARSE_HEADER){
-				String s = read_line();
+				String s = buffer.readLine();
 				//这一波没数据了
 				if(s == null)
 					break;
@@ -120,11 +159,12 @@ public class HttpParser extends AParser implements ProtocalParser{
 		if(!cycle_parse(bs))
 			return false;
 		
+		//FIXME
 		//解析成功了，但是这里有可能this.inBuf中还存在一些剩余数据
 		//如果真的有，那说明可能是第二个http请求的头部，需要将数据还给buf，重新定位position即可 
-//		System.out.println("remaining => " + this.remaining());
-//		if(this.remaining() > 0){
-//			buf.position(buf.limit() - this.remaining());
+//		System.out.println("remaining => " + buffer.unread());
+//		if(buffer.unread() > 0){
+//			buf.position(buf.limit() - buffer.unread());
 //		}
 		
 		return true;
@@ -141,6 +181,6 @@ public class HttpParser extends AParser implements ProtocalParser{
 	public void reset() {
 		current_state = PARSE_STATUS_LINE;
 		request = new HttpRequest();
-		resetBuf();
+		buffer.reset();
 	}
 }

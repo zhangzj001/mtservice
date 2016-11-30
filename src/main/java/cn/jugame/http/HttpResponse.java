@@ -22,7 +22,7 @@ public class HttpResponse {
 		//设置一些基本的头部
 		setHeader("Content-Type", "text/plain;charset=utf-8");
 		setHeader("Content-Length", String.valueOf(this.content.length));
-		setHeader("Server", "MT/1.0");
+		setHeader("Server", "MT/3.0");
 	}
 	
 	public void setProtocol(String protocol){

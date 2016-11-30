@@ -393,4 +393,143 @@ public class Common {
         
         return null;
     }
+    
+
+	
+	private static boolean sync_write(SocketChannel channel, ByteBuffer buffer){
+		if(channel == null || buffer == null)
+			return false;
+		
+		Selector selector = null;
+		try{
+			selector = Selector.open();
+			channel.register(selector, SelectionKey.OP_WRITE);
+			
+			while(selector.select() > 0){
+				Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+				if(it.hasNext()){
+					SelectionKey readyKey = it.next();
+					it.remove();
+					
+					int size = 0;
+					while(buffer.remaining() > 0 && (size = channel.write(buffer)) > 0);
+					
+					//读满了数据了，这时候就可以不再等待了
+					if(buffer.remaining() == 0)
+						break;
+				}
+			}
+	
+			return buffer.remaining()==0;
+		}catch(Exception e){
+			logger.error("sync_write exception", e);
+			return false;
+		}finally{
+			try{
+				if(selector != null)
+					selector.close();
+			}catch(Exception e){logger.error("sync_write selector exception", e);}
+		}
+	}
+	
+	public static boolean write_channel(SocketChannel channel, byte[] bs){
+		try{
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte[] len_bytes = ByteHelper.int2ByteArray(bs.length);
+			baos.write(len_bytes);
+			baos.write(bs);
+			bs = baos.toByteArray();
+			
+			ByteBuffer buf = ByteBuffer.wrap(new byte[bs.length]);
+			buf.put(bs);
+			buf.flip();
+			
+			//这里写也有可能返回size=0
+			if(!sync_write(channel, buf))
+				return false;
+			
+			return true;
+		}catch(Exception e){
+			logger.error("write_channel exception", e);
+			return false;
+		}
+	}
+	
+	//同步读，一直读到len个字节为止
+	private static boolean sync_read(SocketChannel channel, ByteBuffer buffer){
+		if(channel == null || buffer == null)
+			return false;
+		
+		Selector selector = null;
+		try{
+			selector = Selector.open();
+			channel.register(selector, SelectionKey.OP_READ);
+			
+			while(selector.select() > 0){
+				Iterator<SelectionKey> it = selector.selectedKeys().iterator();
+				if(it.hasNext()){
+					SelectionKey readyKey = it.next();
+					it.remove();
+					
+					int size = 0;
+					while(buffer.remaining() > 0 && (size = channel.read(buffer)) > 0);
+					
+					//读满了数据了，这时候就可以不再等待了
+					if(buffer.remaining() == 0)
+						break;
+	
+					//遇到客户端关socket
+					if(size == -1){
+						return false;
+					}
+				}
+			}
+			return true;
+		}catch(java.nio.channels.ClosedChannelException e){
+        	//这种客户端自己断开连接导致读错误的情况就忽略吧
+        	logger.info(e.getMessage());
+        	return false;
+        }catch(java.io.IOException e){
+        	//这种客户端自己断开连接导致读错误的情况就忽略吧
+        	logger.info(e.getMessage());
+        	return false;
+        }catch(Exception e){
+			logger.error("sync_read exception", e);
+			return false;
+		}finally{
+			if(selector != null){
+				try{
+					selector.close();
+				}catch(Exception e){
+					logger.error("sync_read selector exception", e);}
+			}
+		}
+	}
+	
+	public static byte[] read_channel(SocketChannel channel, int len){
+		ByteBuffer buffer = ByteBuffer.wrap(new byte[len]);
+        //一直把buffer读满为止
+    	if(!sync_read(channel, buffer))
+    		return null;
+    	
+        //把数据倒出来
+        buffer.flip();
+        byte[] bytes = new byte[len];
+        buffer.get(bytes);
+        
+        return bytes;
+	}
+	
+	public static byte[] read_channel(SocketChannel channel){
+		//头4个字节代表长度
+		byte[] len_bytes = read_channel(channel, 4);
+		if(len_bytes == null)
+			return null;
+		
+		int len = ByteHelper.bytesToInt(len_bytes);
+		if(len <= 0)
+			return null;
+		
+		return read_channel(channel, len);
+	}
 }

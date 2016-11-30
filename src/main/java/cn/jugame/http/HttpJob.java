@@ -49,7 +49,6 @@ public abstract class HttpJob implements Job{
 		
 		//将数据写回客户端
 		byte[] respData = response.getData();
-		System.out.println("respData.length=>" + respData.length);
 		if(!socket.send(respData)){
 			return false;
 		}

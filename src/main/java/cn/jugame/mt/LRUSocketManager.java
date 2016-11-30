@@ -3,6 +3,12 @@ package cn.jugame.mt;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 
+/**
+ * 基于LRU策略的socket管理器，可以通过该管理器限制服务端最大的保持连接数，当有更多连接进来的时候，将会将最旧的连接踢出<br>
+ * <b>该管理器尚属于实验性质！！</b>
+ * @author zimT_T
+ *
+ */
 class LRUSocketManager {
 	private int capacity;
 	public LRUSocketManager(int capacity){

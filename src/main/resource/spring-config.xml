@@ -13,11 +13,6 @@
     	 http://code.alibabatech.com/schema/dubbo/dubbo.xsd
        ">
      
-     <!-- 启动包扫描功能-->
-     <context:component-scan base-package="cn.jugame">
-        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
-     </context:component-scan>
-     
      <bean id="propertyConfigurer" class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
         <property name="locations">
             <list>
@@ -26,35 +21,6 @@
         </property>
     </bean>
     
-    <!-- 数据库配置 -->
-  	<bean id="dataSource" class="org.logicalcobwebs.proxool.ProxoolDataSource">
-		<property name="alias" value="proxoolDataSource"/>
-		<property name="driver" value="${connection.driver_class}" />
-		<property name="driverUrl" value="${connection.url}" />
-		<property name="user" value="${connection.username}" />
-		<property name="password" value="${connection.password}" />
-		<property name="maximumConnectionCount" value="${proxool.maximum.connection.count}"/>
-		<property name="minimumConnectionCount" value="${proxool.minimum.connection.count}" />
-		<property name="statistics" value="${proxool.statistics}" />
-		<property name="simultaneousBuildThrottle" value="${proxool.simultaneous.build.throttle}"/>
-	</bean>
-	
 	<bean id="springFactory" class="cn.jugame.util.SpringFactory"/>
 	
-	<bean id="jdbcTemplate" class="org.springframework.jdbc.core.JdbcTemplate">
- 	    <property name="dataSource" ref="dataSource" />
- 	</bean>
-  
-    <!-- memcached 配置 --> 
-    <bean name="memcachedClient" class="net.rubyeye.xmemcached.utils.XMemcachedClientFactoryBean"
-    	destroy-method="shutdown">
-    	<property name="servers">
-    		<value>${memcache.ip}:${memcache.port}</value>
-    	</property>
-    	<property name="commandFactory">
-    		<bean class="net.rubyeye.xmemcached.command.BinaryCommandFactory"></bean>
-           </property>
-    </bean>	
-    <bean id="Cache" class="cn.jugame.util.Cache" />
-	 
 </beans>

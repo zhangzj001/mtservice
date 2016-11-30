@@ -1,13 +1,15 @@
 package cn.jugame.msg;
 
+import java.io.ByteArrayOutputStream;
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
 import cn.jugame.mt.ProtocalParseException;
 import cn.jugame.mt.ProtocalParser;
+import cn.jugame.util.ByteHelper;
 
 public class MessageProtocalParser implements ProtocalParser{
-
+	
 	//数据包头部指定的长度值 
 	private ByteBuffer header = ByteBuffer.wrap(new byte[4]);
 	private ByteBuffer content = null; //这个要看读到的header指示有多长的数据包才能初始化
@@ -65,5 +67,25 @@ public class MessageProtocalParser implements ProtocalParser{
 	public void reset() {
 		header = ByteBuffer.wrap(new byte[4]);
 		content = null;
+	}
+	
+	/**
+	 * 将字节数据转换成消息体数据
+	 * @param bytes
+	 * @return
+	 */
+	public static byte[] toMessage(byte[] bytes){
+		if(bytes == null)
+			return null;
+		
+		ByteArrayOutputStream o = new ByteArrayOutputStream();
+		int len = bytes.length;
+		try{
+			o.write(ByteHelper.int2ByteArray(len));
+			o.write(bytes);
+			return o.toByteArray();
+		}catch(Exception e){
+			return null;
+		}
 	}
 }

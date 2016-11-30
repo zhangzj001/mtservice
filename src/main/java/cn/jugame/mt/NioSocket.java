@@ -11,6 +11,8 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import cn.jugame.util.Common;
+
 public class NioSocket {
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -38,11 +40,7 @@ public class NioSocket {
 		this.parser = factory.create();
 		
 		//默认使用socket的读缓冲大小
-		try{
-			readBufferSize = channel.socket().getReceiveBufferSize();
-		}catch(Exception e){
-			readBufferSize = DEFAULT_BUFF_SIZE;
-		}
+		readBufferSize = DEFAULT_BUFF_SIZE;
 		maxSendBufferSize = readBufferSize*1024; //上升一个单位，8k变8m
 		outBuf = ByteBuffer.wrap(new byte[readBufferSize]);
 	}
@@ -149,8 +147,7 @@ public class NioSocket {
 			outBuf = ensureLargeEnough(outBuf, bs);
 			outBuf.put(bs);
 			//这个socket需要读写了
-			currReactor.add(this, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
-			return true;
+			return currReactor.add(this, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 		}
 	}
 	
@@ -183,16 +180,19 @@ public class NioSocket {
 	}
 	
 	/**
-	 * 关闭socketchannel，同时清空缓冲区
+	 * 关闭socketchannel，同时清空缓冲区<br>
+	 * 如果是为了释放资源，请调用Context.releaseSocket来执行，那样才能完美地释放所有相关资源!
 	 */
-	public void close(){
+	void close(){
 		if(channel != null){
 			try{channel.close();}catch(Exception e){logger.error("error", e);}
 		}
 		if(outBuf != null){
 			outBuf.clear();
+			outBuf = null;
 		}
 		parser.reset();
+		parser = null;
 	}
 	
 	/**

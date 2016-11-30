@@ -1,10 +1,8 @@
 package cn.jugame.mt;
 
-import java.nio.ByteBuffer;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
-import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 
 import org.slf4j.Logger;
@@ -17,9 +15,11 @@ public class Reactor implements Runnable{
 	private Selector selector = null;
 	private String name;
 	private Job job;
-	public Reactor(String name, Job job){
+	private Context context;
+	public Reactor(String name, Job job, Context context){
 		this.name = name;
 		this.job = job;
+		this.context = context;
 	}
 	
 	public boolean init(){
@@ -78,8 +78,8 @@ public class Reactor implements Runnable{
 						//读取数据到缓冲区
 						int r = nioSocket.read();
 						if(r == -1){
-							logger.info("关闭客户端socket[" + nioSocket.hashCode() + "]连接");
-							nioSocket.close();
+							logger.debug("关闭客户端socket[" + nioSocket.hashCode() + "]连接");
+							context.releaseSocket(nioSocket);
 							continue;
 						}
 						
@@ -89,7 +89,7 @@ public class Reactor implements Runnable{
 							try{
 								if(!this.job.doJob(nioSocket, packet)){
 									//任务执行失败，则断开socket
-									nioSocket.close();
+									context.releaseSocket(nioSocket);
 								}
 							}catch(Throwable e){logger.error("doJob error", e);}
 						}
@@ -98,7 +98,7 @@ public class Reactor implements Runnable{
 					if(readyKey.isValid() && readyKey.isWritable()){
 						if(!nioSocket.write()){
 							logger.info("socket发送数据异常，关闭这个连接");
-							nioSocket.close();
+							context.releaseSocket(nioSocket);
 							continue;
 						}
 					}

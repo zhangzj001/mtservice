@@ -24,7 +24,6 @@ public abstract class MessageService implements Job{
 	
 	private int server_port = 9999;
 	private int server_thread_count = 16;
-	private int max_connections = 10000;
 	private NioService service;
 	
 	public void setPort(int port){
@@ -33,10 +32,6 @@ public abstract class MessageService implements Job{
 	
 	public void setWorkerCount(int count){
 		this.server_thread_count = count;
-	}
-	
-	public void setMaxConnections(int max){
-		this.max_connections = max;
 	}
 	
 	/**
@@ -101,8 +96,7 @@ public abstract class MessageService implements Job{
 		config.setSoTimeout(so_timeout);
 		
 		service = new NioService(this.server_port, 
-				this.server_thread_count, 
-				this.max_connections);
+				this.server_thread_count);
 		service.setJob(this);
 		service.setConfig(config);
 		service.setProtocalParserFactory(new ProtocalParserFactory() {

@@ -45,12 +45,12 @@ public class HttpServer extends HttpJob{
 		String uri = request.getUri();
 		System.out.println("uri => " + uri);
 		System.out.println("data.length => " + request.getData().length);
-		
+//		
 //		Map<String, String> headers = request.getHeaders();
 //		for(Entry<String, String> e : headers.entrySet()){
 //			System.out.println("header => " + e.getKey() + " : " + e.getValue());
 //		}
-//		
+		
 //		List<HttpCookie> cookies = request.getCookies();
 //		for(HttpCookie cookie : cookies){
 //			System.out.println("Cookie: " + cookie.getName() + "=" + cookie.getValue());
@@ -61,12 +61,12 @@ public class HttpServer extends HttpJob{
 //		System.out.println("SessionId => " + session.getId());
 		
 		//下载文件
-		byte[] bs = Common.file_get_contents("D:/book/[MySQL核心技术手册(第二版)].pdf");
-		System.out.println("file.length => " + bs.length);
-		response.setHeader("Content-Type", "application/octet-stream");
-		response.setHeader("Content-Length", String.valueOf(bs.length));
-		response.setHeader("Content-Disposition", "attachment; filename=myfile.pdf");
-		response.setContent(bs);
+//		byte[] bs = Common.file_get_contents("D:/book/[MySQL核心技术手册(第二版)].pdf");
+//		System.out.println("file.length => " + bs.length);
+//		response.setHeader("Content-Type", "application/octet-stream");
+//		response.setHeader("Content-Length", String.valueOf(bs.length));
+//		response.setHeader("Content-Disposition", "attachment; filename=myfile.pdf");
+//		response.setContent(bs);
 		
 //		HttpCookie cookie = new HttpCookie("a", "b");
 //		cookie.setPath(request.getUri());
@@ -97,8 +97,8 @@ public class HttpServer extends HttpJob{
 //			System.out.println("data => " + new String(request.getData(), "UTF-8"));
 //			}catch(Exception e){}
 //		}
-//		
-//		response.setContent("hello world");
+		
+		response.setContent("hello world");
 		return true;
 	}
 	

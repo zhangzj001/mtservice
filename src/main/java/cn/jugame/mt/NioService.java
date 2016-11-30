@@ -17,7 +17,8 @@ import org.slf4j.LoggerFactory;
 public class NioService {
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
-	private LRUSocketManager mng;
+	//进行LRU模式的socket管理，用于限制当前最大连接数量
+	private LRUSocketManager mng = null;
 	private int port;
 	private int reactorCount;
 	private List<Reactor> reactors = new ArrayList<Reactor>();
@@ -25,10 +26,17 @@ public class NioService {
 	private ProtocalParserFactory parserFactory;
 	private ExecutorService reactorService;
 	private ServiceConfig config = new ServiceConfig();
-	public NioService(int port, int reactorCount, int capacity){
+	private Context context = new Context(this);
+	public NioService(int port, int reactorCount){
 		this.port = port;
-		this.mng = new LRUSocketManager(capacity);
 		this.reactorCount = reactorCount;
+	}
+	
+	/**
+	 * 启用LRU的socket管理
+	 */
+	public void useLruManager(int capacity){
+		this.mng = new LRUSocketManager(capacity);
 	}
 	
 	/**
@@ -39,6 +47,22 @@ public class NioService {
 		this.job = job;
 	}
 	
+	/**
+	 * 获取任务
+	 * @return
+	 */
+	Job getJob(){
+		return job;
+	}
+
+	/**
+	 * 获取LRU模式的socket管理器
+	 * @return
+	 */
+	public LRUSocketManager getSocketManager() {
+		return mng;
+	}
+
 	/**
 	 * 设置服务配置参数
 	 * @param config
@@ -74,7 +98,7 @@ public class NioService {
 	public boolean init(){
 		//初始化reactor
 		for(int i=0; i<reactorCount; ++i){
-			Reactor reactor = new Reactor("reactor_" + i, job);
+			Reactor reactor = new Reactor("reactor_" + i, job, context);
 			if(!reactor.init()){
 				logger.error("初始化reactor失败");
 			}
@@ -161,17 +185,20 @@ public class NioService {
 		channel.configureBlocking(false);
 		channel.socket().setReuseAddress(true);
 		channel.socket().setSoTimeout(config.getSoTimeout()); //10s的数据读取时间，避免客户端慢读
+		
 		NioSocket socket = new NioSocket(channel, this.parserFactory);
 		socket.setReadBufferSize(config.getReadBufferSize());
 		socket.setMaxSendBufferSize(config.getMaxSendBufferSize());
 		
 		//创建channel的时候更新LRU管理器
-		NioSocket oldSocket = mng.add(socket);
-		//有溢出现象
-		if(oldSocket != null){
-			if(oldSocket.isOpen()){
-				logger.warn("存在socket溢出现象，关闭最早的socket...");
-				closeNioSocket(oldSocket);
+		if(mng != null){
+			NioSocket oldSocket = mng.add(socket);
+			//有溢出现象
+			if(oldSocket != null){
+				if(oldSocket.isOpen()){
+					logger.warn("存在socket溢出现象，关闭最早的socket...");
+					context.releaseSocket(oldSocket);
+				}
 			}
 		}
 		
@@ -179,17 +206,8 @@ public class NioService {
 		Reactor reactor = pick();
 		if(!reactor.add(socket)){
 			logger.error("接收socket出现错误，关闭这个这个socket");
-			socket.close();
+			context.releaseSocket(socket);
 		}
-	}
-	
-	private void closeNioSocket(NioSocket socket){
-		//任务在关闭channel前可以做一些事情
-		job.beforeCloseSocket(socket);
-		//关闭channel前先从LRU管理器中移除
-		mng.remove(socket);
-		//最后关闭这个socket
-		socket.close();
 	}
 	
 }

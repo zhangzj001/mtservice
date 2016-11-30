@@ -1,15 +1,10 @@
 package cn.jugame.http;
 
 import java.net.HttpCookie;
-import java.nio.channels.SocketChannel;
 
 import cn.jugame.mt.Job;
-import cn.jugame.mt.MtJob;
-import cn.jugame.mt.MtPackage;
-import cn.jugame.mt.MtServer;
 import cn.jugame.mt.NioSocket;
 import cn.jugame.util.Common;
-import sun.util.logging.resources.logging;
 
 public abstract class HttpJob implements Job{
 	
@@ -53,7 +48,9 @@ public abstract class HttpJob implements Job{
 		}
 		
 		//将数据写回客户端
-		if(!socket.send(response.getData())){
+		byte[] respData = response.getData();
+		System.out.println("respData.length=>" + respData.length);
+		if(!socket.send(respData)){
 			return false;
 		}
 		

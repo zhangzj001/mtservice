@@ -1,15 +1,18 @@
-package cn.jugame.ms;
+package cn.jugame.msg;
 
 import java.nio.BufferUnderflowException;
 import java.nio.ByteBuffer;
 
+import cn.jugame.mt.ProtocalParseException;
 import cn.jugame.mt.ProtocalParser;
 
-public class MsProtocalParser implements ProtocalParser{
+public class MessageProtocalParser implements ProtocalParser{
 
 	//数据包头部指定的长度值 
 	private ByteBuffer header = ByteBuffer.wrap(new byte[4]);
 	private ByteBuffer content = null; //这个要看读到的header指示有多长的数据包才能初始化
+	
+	private static final int MAX_MESSAGE_SIZE = 4*1024*1024; //一个消息长度到达4M，那已经很夸张了
 
 	@Override
 	public boolean parse(ByteBuffer buf) {
@@ -30,6 +33,8 @@ public class MsProtocalParser implements ProtocalParser{
 			header.flip();
 			int len = header.getInt();
 			//FIXME 这里需要对len进行长度判断！
+			if(len > MAX_MESSAGE_SIZE)
+				throw new ProtocalParseException("消息长度过大:" + len);
 			content = ByteBuffer.wrap(new byte[len]);
 		}
 		

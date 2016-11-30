@@ -1,4 +1,4 @@
-package cn.jugame.channel;
+package cn.jugame.msg;
 
 import java.nio.channels.SocketChannel;
 
@@ -6,22 +6,26 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.jugame.mt.MtJob;
-import cn.jugame.mt.MtPackage;
-import cn.jugame.mt.MtServer;
+import cn.jugame.http.HttpParser;
+import cn.jugame.mt.Job;
+import cn.jugame.mt.NioService;
+import cn.jugame.mt.NioSocket;
+import cn.jugame.mt.ProtocalParser;
+import cn.jugame.mt.ProtocalParserFactory;
+import cn.jugame.mt.ServiceConfig;
 import cn.jugame.util.Common;
 import cn.jugame.util.JuConfig;
 import cn.jugame.util.M1;
 import net.sf.json.JSONObject;
 
-public abstract class Service implements MtJob{
+public abstract class MessageService implements Job{
 
-	private static Logger logger = LoggerFactory.getLogger(Service.class);
+	private static Logger logger = LoggerFactory.getLogger(MessageService.class);
 	
-	protected MtServer serv;
 	private int server_port = 9999;
 	private int server_thread_count = 16;
 	private int max_connections = 10000;
+	private NioService service;
 	
 	public void setPort(int port){
 		this.server_port = port;
@@ -75,53 +79,45 @@ public abstract class Service implements MtJob{
 	}
 	
 	@Override
-	public boolean do_job(SocketChannel channel, MtPackage packs) {
+	public boolean doJob(NioSocket socket, Object packet) {
 		try{
 			//处理数据， 对数据内容先进行解压，再进行m1解密
-			byte[] bs = packs.getData();
+			byte[] bs = (byte[])packet;
 			String content = decode(bs);
 			if(StringUtils.isBlank(content))
 				return false;
 			
 			JSONObject json = JSONObject.fromObject(content);
-			return do_job(channel, json);
+			return doJob(socket, json);
 		}catch(Exception e){
-			logger.error("error", e);
+			logger.error("doJob error", e);
 			return false;
 		}
 	}
 	
 	public boolean init(){
-		try{
-			serv = new MtServer(this.server_port, 
-					this.server_thread_count, 
-					this.max_connections,
-					new JobChannelStream());
-			
-			//设置读超时
-			serv.setSoTimeout(JuConfig.getValueInt("socket_timeout"));
-			serv.register(this);
-			
-			return true;
-		}catch(Exception e){
-			e.printStackTrace();
-			return false;
-		}
+		int so_timeout = JuConfig.getValueInt("so_timeout");
+		ServiceConfig config = new ServiceConfig();
+		config.setSoTimeout(so_timeout);
+		
+		service = new NioService(this.server_port, 
+				this.server_thread_count, 
+				this.max_connections);
+		service.setJob(this);
+		service.setConfig(config);
+		service.setProtocalParserFactory(new ProtocalParserFactory() {
+			@Override
+			public ProtocalParser create() {
+				return new MessageProtocalParser();
+			}
+		});
+		return service.init();
 	}
 	
 	public void run(){
+		//开始监听用户请求
 		logger.info("服务启动成功，开始监听用户请求");
-		System.out.println("启动服务成功，开始监听用户请求.");
-		System.out.println("---------------------------");
-
-		//启动工作线程
-		if(!serv.loop()){
-			System.out.println("启动工作线程失败，服务退出");
-			return;
-		}
-
-		//死循环监听连接，因为accept中的server_channel有可能因为各种原因退出。
-		serv.accpet();
+		service.accpet();
 	}
 
 	/**
@@ -130,10 +126,10 @@ public abstract class Service implements MtJob{
 	 * @param data
 	 * @return
 	 */
-	protected abstract boolean do_job(SocketChannel channel, JSONObject data);
+	protected abstract boolean doJob(NioSocket socket, JSONObject data);
 	
 	@Override
-	public void before_close_channel(SocketChannel channel) {
+	public void beforeCloseSocket(NioSocket socket) {
 		//默认什么也不做
 	}
 }

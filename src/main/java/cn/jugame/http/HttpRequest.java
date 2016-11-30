@@ -13,7 +13,6 @@ import javax.servlet.ServletInputStream;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
-import cn.jugame.mt.MtPackage;
 import cn.jugame.util.Common;
 
 public class HttpRequest {

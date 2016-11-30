@@ -19,26 +19,58 @@ public class NioService {
 	
 	private LRUSocketManager mng;
 	private int port;
-	private int so_timeout = 10 * 1000; //默认10s作为读超时
 	private int reactorCount;
 	private List<Reactor> reactors = new ArrayList<Reactor>();
 	private Job job;
 	private ProtocalParserFactory parserFactory;
 	private ExecutorService reactorService;
+	private ServiceConfig config = new ServiceConfig();
 	public NioService(int port, int reactorCount, int capacity){
 		this.port = port;
 		this.mng = new LRUSocketManager(capacity);
 		this.reactorCount = reactorCount;
 	}
 	
+	/**
+	 * 设置工作者，必须设置否则init方法将返回false
+	 * @param job
+	 */
 	public void setJob(Job job){
 		this.job = job;
 	}
 	
+	/**
+	 * 设置服务配置参数
+	 * @param config
+	 */
+	public void setConfig(ServiceConfig config){
+		this.config = config;
+	}
+	
+	/**
+	 * 设置协议解析器工厂，必须设置否则init方法返回false 
+	 * @param parserFactory
+	 */
 	public void setProtocalParserFactory(ProtocalParserFactory parserFactory){
 		this.parserFactory = parserFactory;
 	}
 	
+	/**
+	 * 获取处理socket的reactor数量
+	 * @return
+	 */
+	public int getReactorCount(){
+		return reactors.size();
+	}
+	
+	/**
+	 * 执行初始化工作<br>
+	 * 1. 初始化reactor<br>
+	 * 2. 检查job和protocalparserfactory的设置<br>
+	 * 3. 运行每个初始化成功的reactor
+	 * 
+	 * @return
+	 */
 	public boolean init(){
 		//初始化reactor
 		for(int i=0; i<reactorCount; ++i){
@@ -70,22 +102,6 @@ public class NioService {
 		}
 		
 		return true;
-	}
-	
-	/**
-	 * 设置socketchannel数据读取的超时秒数，默认为10s
-	 * @param timeout
-	 */
-	public void setSoTimeout(int timeout){
-		so_timeout = timeout * 1000;
-	}
-	
-	/**
-	 * 获取处理socket的reactor数量
-	 * @return
-	 */
-	public int getReactorCount(){
-		return reactors.size();
 	}
 
 	/**
@@ -144,8 +160,10 @@ public class NioService {
 		SocketChannel channel = serv_channel.accept();
 		channel.configureBlocking(false);
 		channel.socket().setReuseAddress(true);
-		channel.socket().setSoTimeout(so_timeout); //10s的数据读取时间，避免客户端慢读
+		channel.socket().setSoTimeout(config.getSoTimeout()); //10s的数据读取时间，避免客户端慢读
 		NioSocket socket = new NioSocket(channel, this.parserFactory);
+		socket.setReadBufferSize(config.getReadBufferSize());
+		socket.setMaxSendBufferSize(config.getMaxSendBufferSize());
 		
 		//创建channel的时候更新LRU管理器
 		NioSocket oldSocket = mng.add(socket);

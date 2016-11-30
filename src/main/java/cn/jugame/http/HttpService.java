@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import cn.jugame.mt.NioService;
 import cn.jugame.mt.ProtocalParser;
 import cn.jugame.mt.ProtocalParserFactory;
+import cn.jugame.mt.ServiceConfig;
 import cn.jugame.util.JuConfig;
 
 public class HttpService {
@@ -20,11 +21,14 @@ public class HttpService {
 	
 	public boolean init(){
 		int so_timeout = JuConfig.getValueInt("so_timeout");
+		ServiceConfig config = new ServiceConfig();
+		config.setSoTimeout(so_timeout);
+		
 		service = new NioService(JuConfig.getValueInt("server_port"), 
 				JuConfig.getValueInt("server_thread_count"), 
 				JuConfig.getValueInt("max_connections"));
 		service.setJob(this.job);
-		service.setSoTimeout(so_timeout);
+		service.setConfig(config);
 		service.setProtocalParserFactory(new ProtocalParserFactory() {
 			@Override
 			public ProtocalParser create() {
@@ -35,14 +39,8 @@ public class HttpService {
 	}
 	
 	public void run(){
-		try{
-			//开始监听用户请求
-			logger.info("服务启动成功，开始监听用户请求");
-			System.out.println("启动服务成功，开始监听用户请求.");
-			System.out.println("---------------------------");
-			service.accpet();
-		}catch(Exception e){
-			e.printStackTrace();
-		}
+		//开始监听用户请求
+		logger.info("服务启动成功，开始监听用户请求");
+		service.accpet();
 	}
 }

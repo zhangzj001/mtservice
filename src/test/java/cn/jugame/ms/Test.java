@@ -3,6 +3,7 @@ package cn.jugame.ms;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import cn.jugame.msg.MessageProtocalParser;
 import cn.jugame.mt.NioService;
 import cn.jugame.mt.ProtocalParser;
 import cn.jugame.mt.ProtocalParserFactory;
@@ -15,7 +16,7 @@ public class Test {
 		service.setProtocalParserFactory(new ProtocalParserFactory() {
 			@Override
 			public ProtocalParser create() {
-				return new MsProtocalParser();
+				return new MessageProtocalParser();
 			}
 		});
 		if(!service.init()){

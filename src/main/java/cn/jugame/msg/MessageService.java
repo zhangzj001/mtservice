@@ -23,7 +23,7 @@ public abstract class MessageService implements Job{
 	private static Logger logger = LoggerFactory.getLogger(MessageService.class);
 	
 	private int server_port = 9999;
-	private int server_thread_count = 16;
+	private int worker_count = 16;
 	private NioService service;
 	
 	public void setPort(int port){
@@ -31,7 +31,7 @@ public abstract class MessageService implements Job{
 	}
 	
 	public void setWorkerCount(int count){
-		this.server_thread_count = count;
+		this.worker_count = count;
 	}
 	
 	/**
@@ -95,8 +95,8 @@ public abstract class MessageService implements Job{
 		ServiceConfig config = new ServiceConfig();
 		config.setSoTimeout(so_timeout);
 		
-		service = new NioService(this.server_port, 
-				this.server_thread_count);
+		service = new NioService(this.server_port);
+		service.setWorkerCount(this.worker_count);
 		service.setJob(this);
 		service.setConfig(config);
 		service.setProtocalParserFactory(new ProtocalParserFactory() {

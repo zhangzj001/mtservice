@@ -11,7 +11,7 @@ import cn.jugame.mt.ProtocalParserFactory;
 public class Test {
 	private static ApplicationContext ctx = new ClassPathXmlApplicationContext("spring-config.xml");
 	public static void main(String[] args) {
-		NioService service = new NioService(9999, 2);
+		NioService service = new NioService(9999);
 		service.setJob(new MsJob());
 		service.setProtocalParserFactory(new ProtocalParserFactory() {
 			@Override

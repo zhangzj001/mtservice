@@ -1,6 +1,5 @@
 package cn.jugame.mt;
 
-import cn.jugame.mt.sm.LRUSocketManager;
 import cn.jugame.mt.sm.SocketManager;
 
 public class Context {
@@ -25,5 +24,13 @@ public class Context {
 		
 		//最后关闭这个socket
 		socket.close();
+	}
+	
+	public Job getJob(){
+		return service.getJob();
+	}
+	
+	public TaskExecutor getTaskExecutor(){
+		return service.getTaskExecutor();
 	}
 }

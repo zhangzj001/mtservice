@@ -22,17 +22,42 @@ public class NioService {
 	
 	//进行LRU模式的socket管理，用于限制当前最大连接数量
 	private SocketManager mng = null;
-	private int port;
-	private int reactorCount;
+	private int port = 9999;
+	private int reactorCount = 1;
+	private int workerCount = 1;
 	private List<Reactor> reactors = new ArrayList<Reactor>();
 	private Job job;
 	private ProtocalParserFactory parserFactory;
 	private ExecutorService reactorService;
+	private TaskExecutor taskExecutor;
 	private ServiceConfig config = new ServiceConfig();
 	private Context context = new Context(this);
-	public NioService(int port, int reactorCount){
+	public NioService(int port){
 		this.port = port;
+	}
+	
+	/**
+	 * 获取任务执行者
+	 * @return
+	 */
+	public TaskExecutor getTaskExecutor(){
+		return taskExecutor;
+	}
+	
+	/**
+	 * 设置reactor数量
+	 * @param reactorCount
+	 */
+	public void setReactorCount(int reactorCount){
 		this.reactorCount = reactorCount;
+	}
+	
+	/**
+	 * 设置工作线程数量
+	 * @param workerCount
+	 */
+	public void setWorkerCount(int workerCount){
+		this.workerCount = workerCount;
 	}
 	
 	/**
@@ -54,7 +79,7 @@ public class NioService {
 	 * 获取任务
 	 * @return
 	 */
-	Job getJob(){
+	public Job getJob(){
 		return job;
 	}
 
@@ -127,6 +152,9 @@ public class NioService {
 		for(int i=0; i<reactors.size(); ++i){
 			reactorService.execute(reactors.get(i));
 		}
+		
+		//初始化工作线程
+		taskExecutor = new TaskExecutor(workerCount, context);
 		
 		return true;
 	}

@@ -86,12 +86,13 @@ public class Reactor implements Runnable{
 						//如果数据已经可以构成应用层包，取出来干活
 						Object packet = null;
 						while((packet = nioSocket.popPacket()) != null){
-							try{
-								if(!this.job.doJob(nioSocket, packet)){
-									//任务执行失败，则断开socket
-									context.releaseSocket(nioSocket);
-								}
-							}catch(Throwable e){logger.error("doJob error", e);}
+//							try{
+//								if(!this.job.doJob(nioSocket, packet)){
+//									//任务执行失败，则断开socket
+//									context.releaseSocket(nioSocket);
+//								}
+//							}catch(Throwable e){logger.error("doJob error", e);}
+							context.getTaskExecutor().execute(nioSocket, packet);
 						}
 					}
 					//如果是写事件

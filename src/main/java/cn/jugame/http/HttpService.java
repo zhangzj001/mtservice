@@ -24,8 +24,9 @@ public class HttpService {
 		ServiceConfig config = new ServiceConfig();
 		config.setSoTimeout(so_timeout);
 		
-		service = new NioService(JuConfig.getValueInt("server_port"), 
-				JuConfig.getValueInt("server_thread_count"));
+		service = new NioService(JuConfig.getValueInt("server_port"));
+		service.setReactorCount(JuConfig.getValueInt("server_reactor_count"));
+		service.setWorkerCount(JuConfig.getValueInt("server_worker_count"));
 		service.setJob(this.job);
 		service.setConfig(config);
 		service.setProtocalParserFactory(new ProtocalParserFactory() {

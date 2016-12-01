@@ -21,7 +21,7 @@ public class NioSocket {
 	private static final int DEFAULT_BUFF_SIZE = 8192;
 
 	//写缓冲区
-	private ByteBuffer outBuf;
+	private Buffer outBuf;
 	//协议解释器（由解释器提供读缓冲）
 	private ProtocalParser parser;
 	//应用层数据包
@@ -42,7 +42,7 @@ public class NioSocket {
 		//默认使用socket的读缓冲大小
 		readBufferSize = DEFAULT_BUFF_SIZE;
 		maxSendBufferSize = readBufferSize*1024; //上升一个单位，8k变8m
-		outBuf = ByteBuffer.wrap(new byte[readBufferSize]);
+		outBuf = new Buffer(readBufferSize);
 	}
 	
 	public void setReadBufferSize(int readBufferSize){
@@ -53,21 +53,6 @@ public class NioSocket {
 	public void setMaxSendBufferSize(int maxSendBufferSize){
 		if(maxSendBufferSize > 0)
 			this.maxSendBufferSize = maxSendBufferSize;
-	}
-	
-	/**
-	 * 动态调整buf的容量，如果容量足够则返回当前的ByteBuffer，如果不够则扩容后返回新的ByteBuffer
-	 * @param bs
-	 */
-	private ByteBuffer ensureLargeEnough(ByteBuffer buf, byte[] bs){
-		if(buf.remaining() < bs.length){
-			buf.flip();
-			int capacity = buf.capacity() + bs.length * 2;
-			ByteBuffer newBuf = ByteBuffer.wrap(new byte[capacity]);
-			newBuf.put(buf);
-			buf = newBuf;
-		}
-		return buf;
 	}
 	
 	/**
@@ -106,21 +91,14 @@ public class NioSocket {
 	boolean write(){
 		try{
 			synchronized (outBuf) {
-				outBuf.flip();
-				int n = channel.write(outBuf);
-				
+				int curr = outBuf.getReadPosition();
+				int n = channel.write(ByteBuffer.wrap(outBuf.getUnreadBytes()));
+				outBuf.setReadPosition(curr + n);
 				//如果能顺利将写缓冲区中的数据全部输出，复用这个outBuf，并将OP_WRITE事件从reactor中移除
-				if(outBuf.remaining() == 0){
-					outBuf.clear();
+				//如果还没有写完，那就等下一次write的时候将outBuf继续输出
+				if(outBuf.unread() == 0){
+					outBuf.reset();
 					currReactor.add(this, SelectionKey.OP_READ);
-				}
-				//如果还没有写完，将数据复制到新的ByteBuffer中
-				else{
-					int remaining = outBuf.remaining();
-					byte[] remainingBytes = new byte[Math.max(DEFAULT_BUFF_SIZE, remaining)];
-					outBuf.get(remainingBytes, 0, remaining);
-					outBuf = ByteBuffer.wrap(remainingBytes);
-					outBuf.position(remaining); //下一次append的时候能找到正确的位置
 				}
 				return true;
 			}
@@ -139,14 +117,12 @@ public class NioSocket {
 	 */
 	public boolean send(byte[] bs){
 		synchronized (outBuf) {
-			//如果超过了写缓冲区最大限制
-			if(bs.length + outBuf.position() > maxSendBufferSize){
+			if(bs.length > maxSendBufferSize){
 				logger.info("超过响应报文最大长度，拒绝响应客户端，将断开连接");
 				return false;
 			}
-			outBuf = ensureLargeEnough(outBuf, bs);
-			outBuf.put(bs);
-			//这个socket需要读写了
+			outBuf.appendBytes(bs);
+			//这个socket需要支持写事件了
 			return currReactor.add(this, SelectionKey.OP_READ | SelectionKey.OP_WRITE);
 		}
 	}
@@ -188,7 +164,6 @@ public class NioSocket {
 			try{channel.close();}catch(Exception e){logger.error("error", e);}
 		}
 		if(outBuf != null){
-			outBuf.clear();
 			outBuf = null;
 		}
 		parser.reset();

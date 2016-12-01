@@ -1,12 +1,9 @@
 package cn.jugame.msg;
 
-import java.nio.channels.SocketChannel;
-
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.jugame.http.HttpParser;
 import cn.jugame.mt.Job;
 import cn.jugame.mt.NioService;
 import cn.jugame.mt.NioSocket;

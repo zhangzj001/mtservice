@@ -38,14 +38,6 @@ public class Reactor implements Runnable{
 	
 	public boolean add(NioSocket nioSocket, int ops){
 		synchronized (this) {
-			StringBuffer info = new StringBuffer();
-			info.append("regist channel[").append(nioSocket.hashCode()).append("] into reactor[").append(name).append("], ops=[");
-			if((ops & SelectionKey.OP_READ) != 0)
-				info.append("OP_READ,");
-			if((ops & SelectionKey.OP_WRITE) != 0)
-				info.append("OP_WRITE,");
-			logger.debug(info.toString());
-			
 			this.selector.wakeup();
 			return nioSocket.register(this, ops);
 		}

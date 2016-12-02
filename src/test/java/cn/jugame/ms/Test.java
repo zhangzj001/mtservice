@@ -1,5 +1,7 @@
 package cn.jugame.ms;
 
+import java.nio.ByteBuffer;
+
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 

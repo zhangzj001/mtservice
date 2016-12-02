@@ -14,7 +14,6 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.jugame.mt.sm.LRUSocketManager;
 import cn.jugame.mt.sm.SocketManager;
 
 public class NioService {
@@ -162,19 +161,20 @@ public class NioService {
 	/**
 	 * 接收请求。这是一个死循环+阻塞等待的方法，除非抛出异常或者强制关闭
 	 */
-	public void accpet() {
-		ServerSocketChannel serv_channel = null;
+	public boolean accpet() {
+		ServerSocketChannel servChannel = null;
+		Selector selector = null;
 		try{
-			final Selector selector = Selector.open();
-			serv_channel = ServerSocketChannel.open();
+			selector = Selector.open();
+			servChannel = ServerSocketChannel.open();
 	
 			// 非阻塞
-			serv_channel.configureBlocking(false);
-			serv_channel.socket().setReuseAddress(true);
-			serv_channel.socket().bind(new InetSocketAddress(this.port));
+			servChannel.configureBlocking(false);
+			servChannel.socket().setReuseAddress(true);
+			servChannel.socket().bind(new InetSocketAddress(this.port));
 	
 			// 注册accept
-			serv_channel.register(selector, SelectionKey.OP_ACCEPT);
+			servChannel.register(selector, SelectionKey.OP_ACCEPT);
 			
 			logger.debug("监听ing...");
 			while(selector.select() > 0) {
@@ -190,15 +190,18 @@ public class NioService {
 					}
 				}
 			}
+			return true;
 		}catch(Throwable e){
 			logger.error("accpet error", e);
+			return false;
 		}finally{
 			//这里是不应该来到的地方，来到了那必然发生了灾难！！
 			try{
-				logger.debug("WTF！！！ServerSocketChannel has got some problems...");
-				if(serv_channel != null && serv_channel.isOpen()){
-					logger.debug("WTF！！ServerSocketChannel is still alive, i have to kill it and restart it.");
-					serv_channel.close();
+				if(servChannel != null && servChannel.isOpen()){
+					servChannel.close();
+				}
+				if(selector != null){
+					selector.close();
 				}
 			}catch(Throwable e){
 				logger.error("accept error", e);
@@ -211,8 +214,8 @@ public class NioService {
 		return reactors.get(index++ % reactors.size());
 	}
 
-	private void doAccept(ServerSocketChannel serv_channel) throws Exception {
-		SocketChannel channel = serv_channel.accept();
+	private void doAccept(ServerSocketChannel servChannel) throws Exception {
+		SocketChannel channel = servChannel.accept();
 		channel.configureBlocking(false);
 		channel.socket().setReuseAddress(true);
 		channel.socket().setSoTimeout(config.getSoTimeout()); //10s的数据读取时间，避免客户端慢读

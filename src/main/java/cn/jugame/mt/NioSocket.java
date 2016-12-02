@@ -1,8 +1,8 @@
 package cn.jugame.mt;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
+import java.nio.channels.ClosedChannelException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.SocketChannel;
 import java.util.LinkedList;
@@ -11,14 +11,12 @@ import java.util.NoSuchElementException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.jugame.util.Common;
-
 public class NioSocket {
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	/*默认缓冲区大小*/
-	private static final int DEFAULT_BUFF_SIZE = 8192;
+	private static final int DEFAULT_BUFF_SIZE = 4096; //4k
 
 	//写缓冲区
 	private Buffer outBuf;
@@ -41,8 +39,8 @@ public class NioSocket {
 		
 		//默认使用socket的读缓冲大小
 		readBufferSize = DEFAULT_BUFF_SIZE;
-		maxSendBufferSize = readBufferSize*1024; //上升一个单位，8k变8m
-		outBuf = new Buffer(readBufferSize);
+		maxSendBufferSize = DEFAULT_BUFF_SIZE;
+		outBuf = new Buffer(DEFAULT_BUFF_SIZE);
 	}
 	
 	public void setReadBufferSize(int readBufferSize){
@@ -104,6 +102,7 @@ public class NioSocket {
 			}
 		}catch(IOException e){
 			//远程主机强迫关闭了连接
+			logger.error("对端主机已关闭，无法写数据: " + e.getMessage());
 			return false;
 		}catch(Throwable e){
 			logger.error("写出socket数据异常", e);
@@ -141,6 +140,10 @@ public class NioSocket {
 		try{
 			channel.register(reactor.selector(), ops, this);
 			return true;
+		}catch(ClosedChannelException e){
+			//对端主机关闭了channel，注册失败
+			logger.debug("socket已关闭，无法注册事件");
+			return false;
 		}catch(Exception e){
 			logger.error("Reactor.add error", e);
 			return false;
@@ -164,10 +167,12 @@ public class NioSocket {
 			try{channel.close();}catch(Exception e){logger.error("error", e);}
 		}
 		if(outBuf != null){
-			outBuf = null;
+			outBuf.reset(false);
 		}
-		parser.reset();
-		parser = null;
+		if(parser != null){
+			parser.reset();
+			parser = null;
+		}
 	}
 	
 	/**

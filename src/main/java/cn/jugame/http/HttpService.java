@@ -41,6 +41,8 @@ public class HttpService {
 	public void run(){
 		//开始监听用户请求
 		logger.info("服务启动成功，开始监听用户请求");
-		service.accpet();
+		while(!service.accpet()){
+			logger.error("服务出现错误，重启Acceptor!");
+		}
 	}
 }

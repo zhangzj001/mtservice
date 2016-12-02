@@ -157,13 +157,6 @@ public class HttpParser implements ProtocalParser{
 		if(!doParse())
 			return false;
 		
-		//FIXME
-		//解析成功了，但是这里有可能this.inBuf中还存在一些剩余数据
-		//如果真的有，那说明可能是第二个http请求的头部，需要将数据还给buf，重新定位position即可 
-//		if(buffer.unread() > 0){
-//			buf.position(buf.limit() - buffer.unread());
-//		}
-		
 		return true;
 	}
 
@@ -178,6 +171,6 @@ public class HttpParser implements ProtocalParser{
 	public void reset() {
 		current_state = PARSE_STATUS_LINE;
 		request = new HttpRequest();
-		buffer.reset();
+		buffer.reset(true);
 	}
 }

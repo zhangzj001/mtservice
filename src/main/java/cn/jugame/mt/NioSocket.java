@@ -97,7 +97,7 @@ public class NioSocket {
 				//如果能顺利将写缓冲区中的数据全部输出，复用这个outBuf，并将OP_WRITE事件从reactor中移除
 				//如果还没有写完，那就等下一次write的时候将outBuf继续输出
 				if(outBuf.unread() == 0){
-					outBuf.reset();
+					outBuf.reset(true);
 					currReactor.add(this, SelectionKey.OP_READ);
 				}
 				return true;

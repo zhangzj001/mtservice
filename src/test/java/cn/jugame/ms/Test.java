@@ -4,6 +4,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 import cn.jugame.msg.MessageProtocalParser;
+import cn.jugame.msg.MessageProtocalParser;
 import cn.jugame.mt.NioService;
 import cn.jugame.mt.ProtocalParser;
 import cn.jugame.mt.ProtocalParserFactory;

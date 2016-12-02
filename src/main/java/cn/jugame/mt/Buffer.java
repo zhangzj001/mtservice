@@ -83,14 +83,6 @@ public class Buffer {
 	 * @param bs
 	 */
 	public void appendBytes(byte[] bs){
-//		int unUse = unuse();
-//		//空闲的空间不足以容纳这些字节，则要动态扩容
-//		if(unUse < bs.length){
-//			capacity = inBuf.length + bs.length*2;
-//			byte[] newBytes = new byte[capacity];
-//			System.arraycopy(inBuf, 0, newBytes, 0, inBuf.length);
-//			inBuf = newBytes;
-//		}
 		extendBuffer(bs.length);
 		
 		//从limit这个位置开始追加数据
@@ -157,9 +149,13 @@ public class Buffer {
 		return bs;
 	}
 	
-	public void reset(){
-//		inBuf = new byte[DEFAULT_CAPACITY];
+	public void reset(boolean keepUnread){
+		//还有未读数据，将这些数据复制到前面
+		int n = unread();
+		if(keepUnread && n > 0){
+			System.arraycopy(inBuf, rPosition, inBuf, 0, n);
+		}
 		rPosition = 0;
-		limit = -1;
+		limit = keepUnread ? n-1 : -1;
 	}
 }

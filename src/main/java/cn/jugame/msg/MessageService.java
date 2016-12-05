@@ -19,16 +19,21 @@ public abstract class MessageService implements Job{
 
 	private static Logger logger = LoggerFactory.getLogger(MessageService.class);
 	
-	private int server_port = 9999;
-	private int worker_count = 16;
+	private int serverPort = 9999;
+	private int workerCount = 4;
+	private int reactorCount = 4;
 	private NioService service;
 	
 	public void setPort(int port){
-		this.server_port = port;
+		this.serverPort = port;
+	}
+	
+	public void setReactorCount(int count){
+		this.reactorCount = count;
 	}
 	
 	public void setWorkerCount(int count){
-		this.worker_count = count;
+		this.workerCount = count;
 	}
 	
 	/**
@@ -92,8 +97,9 @@ public abstract class MessageService implements Job{
 		ServiceConfig config = new ServiceConfig();
 		config.setSoTimeout(so_timeout);
 		
-		service = new NioService(this.server_port);
-		service.setWorkerCount(this.worker_count);
+		service = new NioService(this.serverPort);
+		service.setWorkerCount(this.workerCount);
+		service.setReactorCount(this.reactorCount);
 		service.setJob(this);
 		service.setConfig(config);
 		service.setProtocalParserFactory(new ProtocalParserFactory() {

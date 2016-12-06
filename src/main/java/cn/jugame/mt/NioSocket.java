@@ -32,6 +32,9 @@ public class NioSocket {
 	private int maxSendBufferSize;
 	private int readBufferSize;
 	
+	//附件 -- 这招特别好用！
+	private Object attachment;
+	
 	public NioSocket(SocketChannel channel, ProtocalParserFactory factory) {
 		this.channel = channel;
 		//构建第一个parser
@@ -42,7 +45,15 @@ public class NioSocket {
 		maxSendBufferSize = DEFAULT_BUFF_SIZE;
 		outBuf = new Buffer(DEFAULT_BUFF_SIZE);
 	}
-	
+
+	public Object getAttachment() {
+		return attachment;
+	}
+
+	public void setAttachment(Object attachment) {
+		this.attachment = attachment;
+	}
+
 	public void setReadBufferSize(int readBufferSize){
 		if(readBufferSize > 0)
 			this.readBufferSize = readBufferSize;

@@ -4,7 +4,7 @@ import java.io.File;
 
 /**
  * 设定inode文件最大约为32M，vnode文件最大约为4Gb。<br>
- * 每个inodefile头部为：4字节。每个inode节点恒定占用8字节，那么文件最大容量约为32Mb/8=4Mb个节点<br>
+ * 每个inodefile头部为：4字节。每个inode节点恒定占用8字节，那么文件最大容量约为32Mb/8=4M个节点<br>
  * 假设每个vnode数据大小为1kb，则4M个vnode节点大小为4Gb。<br>
  * 这里最大容量是基于估算的，实际情况可能因为每个vnode节点大小不一样有所不同，但一个inode最多关联16个vnode文件，那么此时平均每个vnode的大小为16kb<br>
  * 

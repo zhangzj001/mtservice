@@ -22,6 +22,9 @@ public class INode {
 			return null;
 		if(dataLength < 0 || dataOffset < 0)
 			return null;
+		//最大数据长度为16Mb
+		if(dataLength >= 16*1024*1024)
+			return null;
 		
 		long d1 = ((compressed ? 0x20 : 0x00) | (encrypted ? 0x10 : 0x00) | associateVnodeFileNumber) << 24;
 		d1 |= dataLength;

@@ -11,7 +11,6 @@ import cn.jugame.mt.ProtocalParser;
 import cn.jugame.mt.ProtocalParserFactory;
 import cn.jugame.mt.ServiceConfig;
 import cn.jugame.util.Common;
-import cn.jugame.util.JuConfig;
 import cn.jugame.util.M1;
 import net.sf.json.JSONObject;
 
@@ -19,6 +18,7 @@ public abstract class MessageService implements Job{
 
 	private static Logger logger = LoggerFactory.getLogger(MessageService.class);
 	
+	private int soTimeout = 3000;
 	private int serverPort = 9999;
 	private int workerCount = 4;
 	private int reactorCount = 4;
@@ -34,6 +34,10 @@ public abstract class MessageService implements Job{
 	
 	public void setWorkerCount(int count){
 		this.workerCount = count;
+	}
+	
+	public void setSoTimeout(int soTimeout){
+		this.soTimeout = soTimeout;
 	}
 	
 	/**
@@ -93,9 +97,8 @@ public abstract class MessageService implements Job{
 	}
 	
 	public boolean init(){
-		int so_timeout = JuConfig.getValueInt("so_timeout");
 		ServiceConfig config = new ServiceConfig();
-		config.setSoTimeout(so_timeout);
+		config.setSoTimeout(this.soTimeout);
 		
 		service = new NioService(this.serverPort);
 		service.setWorkerCount(this.workerCount);

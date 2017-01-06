@@ -218,7 +218,7 @@ public class NioService {
 		SocketChannel channel = servChannel.accept();
 		channel.configureBlocking(false);
 		channel.socket().setReuseAddress(true);
-		channel.socket().setSoTimeout(config.getSoTimeout()); //10s的数据读取时间，避免客户端慢读
+		channel.socket().setSoTimeout(config.getSoTimeout());
 		
 		NioSocket socket = new NioSocket(channel, this.parserFactory);
 		socket.setReadBufferSize(config.getReadBufferSize());

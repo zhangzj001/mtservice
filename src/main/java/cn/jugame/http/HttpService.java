@@ -7,11 +7,15 @@ import cn.jugame.mt.NioService;
 import cn.jugame.mt.ProtocalParser;
 import cn.jugame.mt.ProtocalParserFactory;
 import cn.jugame.mt.ServiceConfig;
-import cn.jugame.util.JuConfig;
 
 public class HttpService {
 	
 	private static Logger logger = LoggerFactory.getLogger(HttpService.class);
+
+	private int soTimeout = 3000; //默认3s的读超时，够长了
+	private int port = 9999;
+	private int reactorCount = Runtime.getRuntime().availableProcessors();
+	private int worderCount = Runtime.getRuntime().availableProcessors();
 	
 	private NioService service;
 	private HttpJob job;
@@ -19,14 +23,45 @@ public class HttpService {
 		this.job = job;
 	}
 	
+	public int getSoTimeout() {
+		return soTimeout;
+	}
+
+	public void setSoTimeout(int soTimeout) {
+		this.soTimeout = soTimeout;
+	}
+
+	public int getPort() {
+		return port;
+	}
+
+	public void setPort(int port) {
+		this.port = port;
+	}
+
+	public int getReactorCount() {
+		return reactorCount;
+	}
+
+	public void setReactorCount(int reactorCount) {
+		this.reactorCount = reactorCount;
+	}
+
+	public int getWorderCount() {
+		return worderCount;
+	}
+
+	public void setWorderCount(int worderCount) {
+		this.worderCount = worderCount;
+	}
+
 	public boolean init(){
-		int so_timeout = JuConfig.getValueInt("so_timeout");
 		ServiceConfig config = new ServiceConfig();
-		config.setSoTimeout(so_timeout);
+		config.setSoTimeout(soTimeout);
 		
-		service = new NioService(JuConfig.getValueInt("server_port"));
-		service.setReactorCount(JuConfig.getValueInt("server_reactor_count"));
-		service.setWorkerCount(JuConfig.getValueInt("server_worker_count"));
+		service = new NioService(port);
+		service.setReactorCount(reactorCount);
+		service.setWorkerCount(worderCount);
 		service.setJob(this.job);
 		service.setConfig(config);
 		service.setProtocalParserFactory(new ProtocalParserFactory() {

@@ -1,11 +1,7 @@
 package cn.jugame.http;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import cn.jugame.http.router.Action;
 import cn.jugame.http.router.Router;
-import sun.util.logging.resources.logging;
 
 public class SimpleHttpRequestHandler extends HttpJob{
 	

@@ -9,7 +9,7 @@ import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import cn.dreampie.ClassSearchKit;
+import cn.jugame.util.ClassSearchKit;
 
 public class Router {
 	

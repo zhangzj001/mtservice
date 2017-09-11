@@ -1,4 +1,4 @@
-package cn.jugame.fs;
+package cn.jugame.lab.fs;
 
 import java.io.File;
 

@@ -1,4 +1,4 @@
-package cn.jugame.fs;
+package cn.jugame.lab.fs;
 
 public class Token {
 	private String nodeName;

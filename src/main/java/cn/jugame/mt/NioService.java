@@ -16,7 +16,7 @@ import org.slf4j.LoggerFactory;
 
 import cn.jugame.mt.sm.SocketManager;
 
-public class NioService {
+public class NioService implements INio{
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
 	
 	//进行LRU模式的socket管理，用于限制当前最大连接数量
@@ -39,6 +39,7 @@ public class NioService {
 	 * 获取任务执行者
 	 * @return
 	 */
+	@Override
 	public TaskExecutor getTaskExecutor(){
 		return taskExecutor;
 	}
@@ -78,6 +79,7 @@ public class NioService {
 	 * 获取任务
 	 * @return
 	 */
+	@Override
 	public Job getJob(){
 		return job;
 	}
@@ -86,6 +88,7 @@ public class NioService {
 	 * 获取LRU模式的socket管理器
 	 * @return
 	 */
+	@Override
 	public SocketManager getSocketManager() {
 		return mng;
 	}
@@ -125,9 +128,10 @@ public class NioService {
 	public boolean init(){
 		//初始化reactor
 		for(int i=0; i<reactorCount; ++i){
-			Reactor reactor = new Reactor("reactor_" + i, job, context);
+			Reactor reactor = new Reactor("reactor_" + i, context);
 			if(!reactor.init()){
 				logger.error("初始化reactor失败");
+				continue;
 			}
 			reactors.add(reactor);
 		}

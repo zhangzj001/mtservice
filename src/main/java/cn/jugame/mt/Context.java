@@ -3,8 +3,8 @@ package cn.jugame.mt;
 import cn.jugame.mt.sm.SocketManager;
 
 public class Context {
-	private NioService service;
-	public Context(NioService service){
+	private INio service;
+	public Context(INio service){
 		this.service = service;
 	}
 	

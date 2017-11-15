@@ -29,4 +29,8 @@ public class TaskExecutor {
 			}
 		});
 	}
+	
+	public void stop(){
+		executorService.shutdown();
+	}
 }

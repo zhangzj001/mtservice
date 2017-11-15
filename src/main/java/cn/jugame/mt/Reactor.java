@@ -14,11 +14,9 @@ public class Reactor implements Runnable{
 
 	private Selector selector = null;
 	private String name;
-	private Job job;
 	private Context context;
-	public Reactor(String name, Job job, Context context){
+	public Reactor(String name, Context context){
 		this.name = name;
-		this.job = job;
 		this.context = context;
 	}
 	
@@ -52,7 +50,14 @@ public class Reactor implements Runnable{
 		try{
 			logger.info("Reactor[" + name + "]开始运行...");
 			while(true){
-				int n = selector.select();
+				int n = 0;
+				try{
+					n = selector.select();
+				}catch(ClosedSelectorException e){
+					//selector关闭了，直接退出
+					logger.info("reactor【" + name + "】因selector关闭而退出了");
+					return;
+				}
 				
 				//加上这行是为了recv_selector.wakeup和channel.register两行代码进行同步处理。
 				synchronized (this) {}
@@ -102,5 +107,9 @@ public class Reactor implements Runnable{
 			logger.error("Reactor[" + name + "]即将关闭");
 			try{this.selector.close();}catch(Exception e){logger.error("Reactor[" + name + "]关闭时发生错误", e);}
 		}
+	}
+	
+	public void stop(){
+		try{selector.close();}catch(Throwable e){logger.error("close error", e);}
 	}
 }

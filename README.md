@@ -1,8 +1,10 @@
 ### A very simple TCP server
-  This component is based on java-nio, and has been used in a core message service in 8868.cn for many years, and proved stable and reliable. It's simpler and easier than Netty, but as fast as Netty (you can try yourself ^_^).
-  You can just easily use it like this demo, what you need to do is to implement the method: `doJob` 
+&nbsp;&nbsp;This component is based on java-nio, and has been used in a core message service in 8868.cn for many years, and proved stable and reliable. It's simpler and easier than Netty, but as fast as Netty (you can try yourself ^_^). 
+  
+&nbsp;&nbsp;You can just easily use it like this demo, what you need to do is to implement the method: `doJob` 
 
-#### Message-Service Demo:{
+#### Message-Service Demo:
+``` java
 public class TestServer extends MessageService{
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -44,9 +46,10 @@ public class TestServer extends MessageService{
 		server.run();
 	}
 }
-}
+```
 
-### Http-Service Demo：{
+### Http-Service Demo：
+```java
 public class TestHttpServer extends HttpJob{
 	@Override
 	protected boolean handleRequest(HttpRequest req, HttpResponse resp){
@@ -78,5 +81,5 @@ public class TestHttpServer extends HttpJob{
 		service.run();
 	}
 }
-}
+```
 

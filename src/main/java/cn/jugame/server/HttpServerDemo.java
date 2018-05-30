@@ -6,13 +6,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
-
-import cn.jugame.http.HttpJob;
 import cn.jugame.http.HttpRequest;
 import cn.jugame.http.HttpResponse;
 import cn.jugame.http.HttpService;
+import cn.jugame.http.HttpSession;
 import cn.jugame.http.Multipart;
 import cn.jugame.http.SimpleHttpRequestHandler;
 import cn.jugame.http.multipart.FilePart;
@@ -54,29 +51,29 @@ public class HttpServerDemo{
 			System.out.println("header => " + e.getKey() + " : " + e.getValue());
 		}
 		
-//		List<HttpCookie> cookies = request.getCookies();
-//		for(HttpCookie cookie : cookies){
-//			System.out.println("Cookie: " + cookie.getName() + "=" + cookie.getValue());
-//		}
+		List<HttpCookie> cookies = request.getCookies();
+		for(HttpCookie cookie : cookies){
+			System.out.println("Cookie: " + cookie.getName() + "=" + cookie.getValue());
+		}
 		
 		//创建session
-//		HttpSession session = request.session();
-//		System.out.println("SessionId => " + session.getId());
+		HttpSession session = request.session();
+		System.out.println("SessionId => " + session.getId());
 		
 		//下载文件
-//		byte[] bs = Common.file_get_contents("D:/book/[MySQL核心技术手册(第二版)].pdf");
+//		byte[] bs = Common.file_get_contents("D:/book/[MySQL核心技术手册(第二版)].pdf"); //呵呵呵
 //		System.out.println("file.length => " + bs.length);
 //		response.setHeader("Content-Type", "application/octet-stream");
 //		response.setHeader("Content-Length", String.valueOf(bs.length));
 //		response.setHeader("Content-Disposition", "attachment; filename=myfile.pdf");
 //		response.setContent(bs);
 		
-//		HttpCookie cookie = new HttpCookie("a", "b");
-//		cookie.setPath(request.getUri());
-//		cookie.setMaxAge(10);
-//		response.setCookie(cookie);
-//		response.setCookie(new HttpCookie("c", "d"));
-//		
+		HttpCookie cookie = new HttpCookie("a", "b");
+		cookie.setPath(request.getUri());
+		cookie.setMaxAge(10);
+		response.setCookie(cookie);
+		response.setCookie(new HttpCookie("c", "d"));
+		
 		//解析参数
 		if(request.isMultipart()){
 			System.out.println("multipart结构的参数");

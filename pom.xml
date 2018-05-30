@@ -221,13 +221,6 @@
 		  <classifier>sources</classifier>
 		</dependency>
 		
-		<!-- zookeeper-client -->
-		<dependency>
-		    <groupId>org.apache.curator</groupId>
-		    <artifactId>curator-recipes</artifactId>
-		    <version>4.0.0</version>
-		</dependency>
-				
 	</dependencies>
 	
 	<distributionManagement>

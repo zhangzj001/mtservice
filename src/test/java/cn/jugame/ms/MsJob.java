@@ -1,15 +1,16 @@
 package cn.jugame.ms;
 
-import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.caucho.hessian.io.ByteHandle;
-
+import cn.jugame.msg.MessageProtocalParser;
 import cn.jugame.mt.Job;
+import cn.jugame.mt.NioService;
 import cn.jugame.mt.NioSocket;
+import cn.jugame.mt.ProtocalParser;
+import cn.jugame.mt.ProtocalParserFactory;
 import cn.jugame.util.ByteHelper;
 import cn.jugame.util.Common;
 import cn.jugame.util.M1;
@@ -93,4 +94,27 @@ public class MsJob implements Job{
 		//do nothing
 	}
 
+	
+	public static void main(String[] args) {
+		NioService service = new NioService(9999);
+		service.setJob(new MsJob());
+		service.setReactorCount(4);
+		service.setWorkerCount(16);
+		service.setProtocalParserFactory(new ProtocalParserFactory() {
+			@Override
+			public ProtocalParser create() {
+				return new MessageProtocalParser();
+			}
+		});
+		if(!service.init()){
+			System.out.println("初始化NioService失败");
+			return;
+		}
+		if(!service.accpet()){
+			System.out.println("NioService启动失败");
+			return;
+		}
+		
+		System.out.println("结束了...");
+	}
 }

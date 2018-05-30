@@ -3,6 +3,7 @@
   You can just easily use it like this demo, what you need to do is to implement the method: `doJob` 
 
 #### Message-Service Demo:
+{
 public class TestServer extends MessageService{
 	
 	private Logger logger = LoggerFactory.getLogger(this.getClass());
@@ -44,8 +45,10 @@ public class TestServer extends MessageService{
 		server.run();
 	}
 }
+}
 
 ### Http-Service Demo：
+{
 public class TestHttpServer extends HttpJob{
 	@Override
 	protected boolean handleRequest(HttpRequest req, HttpResponse resp){
@@ -77,5 +80,5 @@ public class TestHttpServer extends HttpJob{
 		service.run();
 	}
 }
-
+}
 

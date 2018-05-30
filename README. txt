@@ -1,5 +1,0 @@
-打包命令:mvn clean package
- 
-打包完了后会在target-->funal目录下生成两个文件夹：lib、bin
-	lib目录下是当前项目所依赖的第三方jar包
-	bin目录下存放了当前项目的配置文件和自己编写的代码（以jar的方式存在）

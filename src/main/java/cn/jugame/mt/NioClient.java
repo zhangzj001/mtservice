@@ -1,33 +1,18 @@
 package cn.jugame.mt;
 
-import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.nio.channels.ClosedSelectorException;
-import java.nio.channels.SelectionKey;
-import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.TreeMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
-
-import javax.swing.tree.DefaultTreeCellEditor.EditorContainer;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import cn.jugame.mt.sm.SocketManager;
-import cn.jugame.util.ByteHelper;
 import cn.jugame.util.Common;
-import cn.jugame.util.M1;
-import net.sf.json.JSONObject;
 
 /**
  * 基于NIO的socket客户端

@@ -84,7 +84,7 @@ public class NioSocket {
 			return r;
 		}catch(IOException e){
 			//远程主机强迫关闭了连接
-			logger.error("socket[" + hashCode() + "]->" + e.getMessage());
+			logger.error("socket[" + hashCode() + "]", e);
 			return -1;
 		}catch(Throwable e){
 			logger.error("读取socket数据异常", e);
@@ -159,14 +159,6 @@ public class NioSocket {
 			logger.error("Reactor.add error", e);
 			return false;
 		}
-	}
-	
-	/**
-	 * 获取内部的socketchannel
-	 * @return
-	 */
-	public SocketChannel javaSocket(){
-		return channel;
 	}
 	
 	/**

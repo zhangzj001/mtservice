@@ -3,6 +3,8 @@ package cn.jugame.util;
 import java.util.concurrent.atomic.AtomicInteger;
 
 /**
+ * XXX 这是一个实验性方法
+ * 
  * 这是一个基于倒计时的执行器，当timeout到期的时候将执行runnable.run()，同时clocker线程终止。<br>
  * 这个设计是用于显示地设置一个超时器，超时之后执行一定的操作。
  * @author zimT_T

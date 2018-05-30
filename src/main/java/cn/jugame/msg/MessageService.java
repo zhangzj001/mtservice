@@ -11,7 +11,6 @@ import cn.jugame.mt.ProtocalParser;
 import cn.jugame.mt.ProtocalParserFactory;
 import cn.jugame.mt.ServiceConfig;
 import cn.jugame.util.Common;
-import cn.jugame.util.M1;
 import net.sf.json.JSONObject;
 
 public abstract class MessageService implements Job{
@@ -48,7 +47,6 @@ public abstract class MessageService implements Job{
 	protected byte[] encode(String s){
 		try{
 			byte[] bs = s.getBytes("UTF-8");
-			bs = M1.encode(bs);
 			bs = Common.gzencode(bs);
 			return bs;
 		}catch(Exception e){
@@ -68,11 +66,7 @@ public abstract class MessageService implements Job{
 			bs = Common.gzdecode(bs);
 			if(bs == null)
 				return null;
-			StringBuffer sb = new StringBuffer();
-			if(M1.decode(bs, sb) != 0)
-				return null;
-			
-			return sb.toString();
+			return new String(bs, "UTF-8");
 		}catch(Exception e){
 			logger.error("decode.error", e);
 			return null;

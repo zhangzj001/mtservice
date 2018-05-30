@@ -13,7 +13,6 @@ import cn.jugame.mt.ProtocalParser;
 import cn.jugame.mt.ProtocalParserFactory;
 import cn.jugame.util.ByteHelper;
 import cn.jugame.util.Common;
-import cn.jugame.util.M1;
 import net.sf.json.JSONObject;
 
 public class MsJob implements Job{
@@ -28,7 +27,6 @@ public class MsJob implements Job{
 	protected byte[] encode(String s){
 		try{
 			byte[] bs = s.getBytes("UTF-8");
-			bs = M1.encode(bs);
 			bs = Common.gzencode(bs);
 			return bs;
 		}catch(Exception e){
@@ -48,11 +46,7 @@ public class MsJob implements Job{
 			bs = Common.gzdecode(bs);
 			if(bs == null)
 				return null;
-			StringBuffer sb = new StringBuffer();
-			if(M1.decode(bs, sb) != 0)
-				return null;
-			
-			return sb.toString();
+			return new String(bs, "UTF-8");
 		}catch(Exception e){
 			logger.error("decode.error", e);
 			return null;
@@ -63,12 +57,12 @@ public class MsJob implements Job{
 	public boolean doJob(NioSocket socket, Object packet) {
 		byte[] bs = (byte[])packet;
 		String s = decode(bs);
-		System.out.println("收到客户端消息：" + s);
+		System.out.println("receive a message：" + s);
 		
 		JSONObject data = JSONObject.fromObject(s);
 		if("test".equals(data.getString("action"))){
 			JSONObject json = new JSONObject();
-			json.put("client", "system");
+			json.put("client", "mytest");
 			json.put("action", data.getString("action") + "_reply");
 			json.put("time", System.currentTimeMillis());
 			byte[] bytes = encode(json.toString());
@@ -76,6 +70,8 @@ public class MsJob implements Job{
 				ByteArrayOutputStream os = new ByteArrayOutputStream();
 				os.write(ByteHelper.int2ByteArray(bytes.length));
 				os.write(bytes);
+				
+				//send a message !
 				if(!socket.send(os.toByteArray())){
 					logger.error("发送消息失败");
 					return false;
@@ -94,7 +90,6 @@ public class MsJob implements Job{
 		//do nothing
 	}
 
-	
 	public static void main(String[] args) {
 		NioService service = new NioService(9999);
 		service.setJob(new MsJob());

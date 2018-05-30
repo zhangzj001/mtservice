@@ -16,7 +16,7 @@ public class TestServer extends MessageService{
 		
 		//send back this message!!
 		if(!send(socket, data)){
-			//terminate this socket!
+			//keep-alive
 			return false;
 		}
 		

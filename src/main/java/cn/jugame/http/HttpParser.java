@@ -164,6 +164,7 @@ public class HttpParser implements ProtocalParser{
 	public Object take() {
 		if(current_state != PARSE_FINISH)
 			return null;
+		content_length = 0;
 		return request;
 	}
 

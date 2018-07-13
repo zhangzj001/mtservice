@@ -16,6 +16,7 @@ public class HttpService {
 	private int port = 9999;
 	private int reactorCount = Runtime.getRuntime().availableProcessors();
 	private int worderCount = Runtime.getRuntime().availableProcessors();
+	private int maxSendBuffSize = 100*1024*1024; //默认响应包大小最大100M
 	
 	private NioService service;
 	private HttpJob job;
@@ -54,10 +55,19 @@ public class HttpService {
 	public void setWorderCount(int worderCount) {
 		this.worderCount = worderCount;
 	}
+	
+	public int getMaxSendBuffSize() {
+		return maxSendBuffSize;
+	}
+
+	public void setMaxSendBuffSize(int maxSendBuffSize) {
+		this.maxSendBuffSize = maxSendBuffSize;
+	}
 
 	public boolean init(){
 		ServiceConfig config = new ServiceConfig();
 		config.setSoTimeout(soTimeout);
+		config.setMaxSendBufferSize(maxSendBuffSize);
 		
 		service = new NioService(port);
 		service.setReactorCount(reactorCount);
@@ -78,6 +88,7 @@ public class HttpService {
 		logger.info("服务启动成功，开始监听用户请求");
 		while(!service.accpet()){
 			logger.error("服务出现错误，重启Acceptor!");
+			try{Thread.sleep(2000);}catch(Exception e){break;}
 		}
 	}
 }

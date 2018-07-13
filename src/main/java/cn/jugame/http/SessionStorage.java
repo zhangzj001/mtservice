@@ -1,8 +1,13 @@
 package cn.jugame.http;
 
-import cn.jugame.util.Cache;
+import cn.jugame.util.MemcachedUtils;
 
-class SessionStorage {
+public class SessionStorage {
+	private static boolean isInit = false;
+	public static void init(String mcIp, int mcPoolSize){
+		MemcachedUtils.init(mcIp, mcPoolSize);
+		isInit = true;
+	}
 	
 	private SessionStorage(){}
 	
@@ -16,12 +21,16 @@ class SessionStorage {
 	}
 	
 	public static HttpSession create(){
+		if(!isInit)
+			return null;
 		HttpSession session = new HttpSession();
-		Cache.set(session.getId(), sessionTimeout, session);
+		MemcachedUtils.set(session.getId(), sessionTimeout, session);
 		return session;
 	}
 	
 	public static HttpSession get(String sessionId){
-		return Cache.get(sessionId);
+		if(!isInit)
+			return null;
+		return MemcachedUtils.get(sessionId);
 	}
 }

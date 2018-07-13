@@ -26,11 +26,8 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.Inflater;
 
 import org.apache.commons.lang.StringUtils;
-import org.apache.http.NameValuePair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import cn.jugame.util.helper.misc.XProperty;
 
 public class Common {
 	
@@ -273,38 +270,6 @@ public class Common {
 
 	public static byte[] compress(byte[] value) {
 		return compress(value, 0, value.length, Deflater.BEST_COMPRESSION);
-	}
-	
-	public static String http_build_query(XProperty... kvs){
-		if(kvs == null || kvs.length == 0)
-			return "";
-		
-		try{
-			StringBuffer buf = new StringBuffer();
-			buf.append(kvs[0].getKey()).append("=").append(kvs[0].getValue());
-			for(int i=1; i<kvs.length; ++i){
-				buf.append("&").append(kvs[i].getKey()).append("=").append(URLEncoder.encode(String.valueOf(kvs[i].getValue()), "UTF-8"));
-			}
-			return buf.toString();
-		}catch(Exception e){
-			return null;
-		}
-	}
-	
-	public static String http_build_query(List<NameValuePair> kvs){
-		if(kvs == null || kvs.size() == 0)
-			return "";
-		
-		try{
-			StringBuffer buf = new StringBuffer();
-			buf.append(kvs.get(0).getName()).append("=").append(kvs.get(0).getValue());
-			for(int i=1; i<kvs.size(); ++i){
-				buf.append("&").append(kvs.get(i).getName()).append("=").append(URLEncoder.encode(String.valueOf(kvs.get(i).getValue()), "UTF-8"));
-			}
-			return buf.toString();
-		}catch(Exception e){
-			return null;
-		}
 	}
 	
 	public static byte[] md5(byte[] bs){

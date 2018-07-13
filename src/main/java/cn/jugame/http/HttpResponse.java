@@ -15,7 +15,7 @@ public class HttpResponse {
 	private String protocol = "HTTP/1.1";
 	private int statusCode = 200;
 	private String statusMsg = "OK";
-	private TreeMap<String, List<String>> headers = new TreeMap<String, List<String>>();
+	private Map<String, List<String>> headers = new TreeMap<String, List<String>>();
 	private byte[] content = new byte[0];
 	
 	public HttpResponse(){
@@ -68,6 +68,10 @@ public class HttpResponse {
 			vs.clear();
 		
 		vs.add(value);
+	}
+	
+	public void setHeaders(Map<String, List<String>> headers){
+		this.headers = headers;
 	}
 	
 	public void setCookie(HttpCookie cookie){

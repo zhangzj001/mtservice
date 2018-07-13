@@ -72,7 +72,6 @@ public class Reactor implements Runnable{
 					
 					//如果是读事件
 					if(readyKey.isValid() && readyKey.isReadable()){
-						System.out.println("reading........");
 						//读取数据到缓冲区
 						int r = nioSocket.read();
 						if(r == -1){
@@ -89,7 +88,6 @@ public class Reactor implements Runnable{
 					}
 					//如果是写事件
 					if(readyKey.isValid() && readyKey.isWritable()){
-						System.out.println("writing......");
 						if(!nioSocket.write()){
 							logger.info("socket发送数据异常，关闭这个连接");
 							context.releaseSocket(nioSocket);

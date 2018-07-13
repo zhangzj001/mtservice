@@ -116,6 +116,7 @@ public class HttpParser implements ProtocalParser{
 				if(kv.length == 2){
 					String k = fixHeaderName(kv[0].trim());
 					String v = kv[1].trim();
+					
 					request.setHeader(k, v);
 					//如果content_length，则记下这个长度
 					if("Content-Length".equalsIgnoreCase(k)){
@@ -156,7 +157,6 @@ public class HttpParser implements ProtocalParser{
 		buffer.appendByteBuffer(buf);
 		if(!doParse())
 			return false;
-		
 		return true;
 	}
 
@@ -164,7 +164,7 @@ public class HttpParser implements ProtocalParser{
 	public Object take() {
 		if(current_state != PARSE_FINISH)
 			return null;
-		content_length = 0;
+		content_length = 0; //重置这个值，避免接下来的请求若没有Content-Type的话使用了上一次的值
 		return request;
 	}
 

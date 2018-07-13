@@ -4,6 +4,9 @@ import java.net.HttpCookie;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+
+import com.google.code.yanf4j.core.Session;
+
 import java.util.TreeMap;
 
 import cn.jugame.http.HttpRequest;
@@ -11,6 +14,7 @@ import cn.jugame.http.HttpResponse;
 import cn.jugame.http.HttpService;
 import cn.jugame.http.HttpSession;
 import cn.jugame.http.Multipart;
+import cn.jugame.http.SessionStorage;
 import cn.jugame.http.SimpleHttpRequestHandler;
 import cn.jugame.http.multipart.FilePart;
 import cn.jugame.http.multipart.ParamPart;
@@ -103,6 +107,7 @@ public class HttpServerDemo{
 	
 	//这一行用来启动spring
 	public static void main(String[] args) {
+		SessionStorage.init("192.168.0.162:12121", 20);
 		HttpService service = new HttpService(new SimpleHttpRequestHandler());
 		if(!service.init()){
 			System.out.println("启动Service失败");

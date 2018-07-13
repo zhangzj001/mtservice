@@ -1,6 +1,11 @@
 package cn.jugame.http;
 
 import java.net.HttpCookie;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import cn.jugame.mt.Job;
 import cn.jugame.mt.NioSocket;
@@ -8,20 +13,43 @@ import cn.jugame.util.Common;
 
 public abstract class HttpJob implements Job{
 	
+	private Logger logger = LoggerFactory.getLogger(this.getClass());
+	
 	protected abstract boolean handleRequest(HttpRequest req, HttpResponse resp);
 	
+	protected boolean autoGzip = true;
+	
+	public boolean isAutoGzip() {
+		return autoGzip;
+	}
+
+	public void setAutoGzip(boolean autoGzip) {
+		this.autoGzip = autoGzip;
+	}
+
 	@Override
 	public boolean doJob(NioSocket socket, Object packet) {
 		//处理用户请求
 		HttpRequest request = (HttpRequest)packet;
 		HttpResponse response = new HttpResponse();
 		
+		//补上远程IP信息
+		try{
+			InetSocketAddress remoteAddr = (InetSocketAddress)socket.javaSocket().getRemoteAddress();
+			request.setRemoteAddress(remoteAddr);
+			InetSocketAddress localAddr = (InetSocketAddress)socket.javaSocket().getLocalAddress();
+			request.setLocalAddress(localAddr);
+		}catch(Exception e){
+			logger.error("error", e);
+			return false;
+		}
+		
 		if(!handleRequest(request, response))
 			return false;
 		
-		//如果请求头说明有Accept-Encoding=gzip，则返回的数据也gzip压缩
+		//如果请求头说明有Accept-Encoding=gzip，则返回的数据也gzip压缩，如果支持自动压缩的话
 		String s = request.getHeader("Accept-Encoding");
-		if(s != null && s.indexOf("gzip") != -1){
+		if(s != null && s.indexOf("gzip") != -1 && isAutoGzip()){
 			//同时对数据进行压缩处理
 			byte[] content = response.getContent();
 			if(content != null && content.length > 0){

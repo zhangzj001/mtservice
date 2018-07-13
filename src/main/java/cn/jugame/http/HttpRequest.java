@@ -2,6 +2,7 @@ package cn.jugame.http;
 
 import java.io.ByteArrayInputStream;
 import java.net.HttpCookie;
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +25,9 @@ public class HttpRequest {
 	private String queryString = "";
 	private String sessionId;
 	
+	private InetSocketAddress remoteAddress;
+	private InetSocketAddress localAddress;
+
 	//存储cookie的容器
 	private Map<String, HttpCookie> cookieMap = new LinkedHashMap<String, HttpCookie>();
 
@@ -153,6 +157,22 @@ public class HttpRequest {
 	
 	public HttpSession session(){
 		return session(true);
+	}
+	
+	public InetSocketAddress getRemoteAddress() {
+		return remoteAddress;
+	}
+
+	public void setRemoteAddress(InetSocketAddress remoteAddress) {
+		this.remoteAddress = remoteAddress;
+	}
+
+	public InetSocketAddress getLocalAddress() {
+		return localAddress;
+	}
+
+	public void setLocalAddress(InetSocketAddress localAddress) {
+		this.localAddress = localAddress;
 	}
 	
 	/**

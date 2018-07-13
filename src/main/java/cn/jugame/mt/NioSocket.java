@@ -64,6 +64,10 @@ public class NioSocket {
 			this.maxSendBufferSize = maxSendBufferSize;
 	}
 	
+	public SocketChannel javaSocket(){
+		return this.channel;
+	}
+	
 	/**
 	 * 从socket读取数据，并使用应用层协议解释器进行数据包解析
 	 * @return
